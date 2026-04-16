@@ -1,7 +1,7 @@
 services:
   # PostgreSQL 数据库
   postgres:
-    image: postgres:15-alpine
+    image: postgres:15
     container_name: annie-postgres
     restart: unless-stopped
     environment:
@@ -22,7 +22,7 @@ services:
 
   # Redis 缓存
   redis:
-    image: redis:7-alpine
+    image: redis:7
     container_name: annie-redis
     restart: unless-stopped
     command: redis-server --appendonly yes
