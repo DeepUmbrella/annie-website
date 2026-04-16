@@ -46,7 +46,7 @@ sudo apt update && sudo apt upgrade -y
 
 # 验证安装
 docker --version
-docker-compose --version
+docker compose --version
 ```
 
 ### 2. 获取代码
@@ -140,9 +140,9 @@ server {
 ### 6. 启动服务
 
 ```bash
-docker-compose up -d --build
-docker-compose ps
-docker-compose logs -f
+docker compose up -d --build
+docker compose ps
+docker compose logs -f
 ```
 
 ### 7. 初始化数据库
@@ -162,7 +162,7 @@ npx prisma migrate deploy
 ### 查看服务状态
 
 ```bash
-docker-compose ps
+docker compose ps
 systemctl status nginx
 docker stats
 ```
@@ -170,7 +170,7 @@ docker stats
 ### 查看日志
 
 ```bash
-docker-compose logs -f backend frontend
+docker compose logs -f backend frontend
 tail -f /var/log/nginx/access.log
 tail -f /var/log/nginx/error.log
 ```
@@ -179,13 +179,13 @@ tail -f /var/log/nginx/error.log
 
 ```bash
 mkdir -p ~/backups
-docker-compose exec postgres pg_dump -U annie annie_db > ~/backups/annie_db_$(date +%Y%m%d).sql
+docker compose exec postgres pg_dump -U annie annie_db > ~/backups/annie_db_$(date +%Y%m%d).sql
 ```
 
 ### 恢复数据库
 
 ```bash
-docker-compose exec -T postgres psql -U annie annie_db < backup.sql
+docker compose exec -T postgres psql -U annie annie_db < backup.sql
 ```
 
 ## 故障排除
@@ -193,16 +193,16 @@ docker-compose exec -T postgres psql -U annie annie_db < backup.sql
 ### 容器无法启动
 
 ```bash
-docker-compose logs backend
-docker-compose logs frontend
-docker-compose ps
+docker compose logs backend
+docker compose logs frontend
+docker compose ps
 ```
 
 ### 数据库连接失败
 
 ```bash
-docker-compose exec postgres pg_isready -U annie
-docker-compose logs postgres
+docker compose exec postgres pg_isready -U annie
+docker compose logs postgres
 ```
 
 ### Nginx 配置问题
@@ -225,6 +225,6 @@ tail -f /var/log/nginx/error.log
 
 ```bash
 git pull origin main
-docker-compose up -d --build
+docker compose up -d --build
 systemctl reload nginx
 ```

@@ -66,15 +66,33 @@ scp "${SSH_OPTS[@]}" "$TMP_ROOT_ENV" "$SSH_TARGET:/tmp/annie-root.env"
 scp "${SSH_OPTS[@]}" "$TMP_BACKEND_ENV" "$SSH_TARGET:/tmp/annie-backend.env"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mv /tmp/annie-root.env $REMOTE_DIR/.env && sudo mv /tmp/annie-backend.env $REMOTE_DIR/backend/.env && sudo chmod 600 $REMOTE_DIR/.env $REMOTE_DIR/backend/.env"
 
-echo "==> 3) 启动 Docker 服务"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && sudo docker-compose up -d --build"
+echo "==> 3) 检查 Docker 镜像加速并启动服务"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "set -e
+MIRRORS=\$(docker info --format '{{json .RegistryConfig.Mirrors}}' 2>/dev/null || echo '[]')
+if [ \"\$MIRRORS\" = '[]' ] || [ -z \"\$MIRRORS\" ]; then
+  echo 'Docker 镜像加速未生效，请先重新执行 setup-server.sh 并确认 docker 已重启。'
+  exit 1
+fi
+
+# 预拉取常用镜像，确保 compose 不直接打到 Docker Hub
+for IMG in 'postgres:15-alpine' 'redis:7-alpine' 'getmeili/meilisearch:v1.3'; do
+  docker pull \"\$IMG\"
+done
+
+cd $REMOTE_DIR && \
+COMPOSE='docker compose'; \
+\$COMPOSE up -d --build"
 
 sleep 20
 
 echo "==> 4) 初始化数据库"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR/backend && sudo docker-compose exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR/backend && \
+COMPOSE='docker compose'; \
+\$COMPOSE exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'"
 
 echo "==> 5) 检查服务状态"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && sudo docker-compose ps && sudo docker-compose logs --tail=20 backend"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && \
+COMPOSE='docker compose'; \
+\$COMPOSE ps && \$COMPOSE logs --tail=20 backend"
 
 echo "✅ deploy 完成"

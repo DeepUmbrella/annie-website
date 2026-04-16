@@ -57,27 +57,13 @@ server {
 }
 EOF
 
-echo "==> 1) 配置 Docker 镜像加速"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mkdir -p /etc/docker && cat > /tmp/daemon.json <<'JSON'
-{
-  \"registry-mirrors\": [\"${ALIYUN_MIRROR}\"],
-  \"log-driver\": \"json-file\",
-  \"log-opts\": {
-    \"max-size\": \"10m\",
-    \"max-file\": \"3\"
-  }
-}
-JSON
-sudo mv /tmp/daemon.json /etc/docker/daemon.json
-sudo systemctl daemon-reload || true"
-
-echo "==> 2) 安装 Git"
+echo "==> 1) 安装 Git"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v git >/dev/null 2>&1; then
   sudo dnf install -y git || sudo yum install -y git
 fi
 sudo git --version'
 
-echo "==> 3) 安装 Docker"
+echo "==> 2) 安装 Docker"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v docker >/dev/null 2>&1; then
   sudo yum install -y yum-utils device-mapper-persistent-data lvm2
   
@@ -100,12 +86,23 @@ sudo systemctl enable docker
 sudo systemctl restart docker
 sudo docker --version'
 
-echo "==> 4) 安装 Docker Compose"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v docker-compose >/dev/null 2>&1; then
-  sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-  sudo chmod +x /usr/local/bin/docker-compose
-fi
-sudo docker-compose version || docker compose version'
+echo "==> 3) 安装 Docker 镜像加速"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mkdir -p /etc/docker && sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
+{
+  \"registry-mirrors\": [\"${ALIYUN_MIRROR}\"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker"
+
+echo "==> 4) 确认 Docker Compose（仅使用新版本插件）"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if docker compose version >/dev/null 2>&1; then
+  docker compose version
+else
+  echo "docker compose 插件未安装，尝试安装 docker-compose-plugin"
+  sudo dnf install -y docker-compose-plugin || sudo yum install -y docker-compose-plugin
+  docker compose version
+fi'
 
 echo "==> 5) 安装 Nginx"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v nginx >/dev/null 2>&1; then
