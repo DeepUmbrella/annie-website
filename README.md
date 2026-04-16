@@ -8,7 +8,7 @@ Annie AI 助手介绍网站 - 前后端分离架构
 - **框架:** React 18
 - **构建工具:** Vite
 - **UI 库:** Ant Design
-- **状态状态:** Redux Toolkit
+- **状态管理:** Redux Toolkit
 - **路由:** React Router
 - **样式:** Tailwind CSS
 
@@ -24,7 +24,7 @@ Annie AI 助手介绍网站 - 前后端分离架构
 ### 部署
 - **容器编排:** Docker Compose
 - **反向代理:** Nginx
-- **进程管理:** PM2
+- **部署方式:** GitHub 拉取 + setup/deploy 两步脚本
 
 ## 快速开始
 
@@ -159,7 +159,35 @@ npm run lint      # 代码检查
 
 ## 部署
 
-参见 `docs/deployment.md` 了解详细的部署指南。
+### 服务器首次环境设置
+
+```bash
+export SSH_HOST=<server-ip>
+export SSH_USER=<ssh-user>
+export SSH_KEY=<path-to-ssh-key>
+export DOMAIN=<your-domain>
+export ALIYUN_MIRROR=<docker-mirror-url>
+export SSL_CERT_PATH=<path-to-ssl-cert.pem>
+export SSL_KEY_PATH=<path-to-ssl-key.pem>
+
+bash scripts/setup-server.sh
+```
+
+### 应用部署（从 GitHub 拉取代码）
+
+```bash
+export SSH_HOST=<server-ip>
+export SSH_USER=<ssh-user>
+export SSH_KEY=<path-to-ssh-key>
+export DOMAIN=<your-domain>
+export POSTGRES_PASSWORD=<strong-password>
+export JWT_SECRET=<strong-secret>
+export MEILISEARCH_MASTER_KEY=<strong-key>
+
+bash scripts/deploy-app.sh
+```
+
+详细说明参见 `docs/deployment.md`。
 
 ## 许可证
 
