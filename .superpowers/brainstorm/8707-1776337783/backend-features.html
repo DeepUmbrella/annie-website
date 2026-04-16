@@ -1,0 +1,57 @@
+<h2>选择后端需要的功能</h2>
+<p class="subtitle">你可以选择多个，点击选中/取消</p>
+
+<div class="options" data-multiselect>
+  <div class="option" data-choice="api" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Annie 对话 API</h3>
+      <p>提供与 Annie AI 助手对话的 API 接口</p>
+    </div>
+  </div>
+  
+  <div class="option" data-choice="user-auth" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>用户认证系统</h3>
+      <p>注册、登录、权限管理、个人资料</p>
+    </div>
+  </div>
+  
+  <div class="option" data-choice="blog-cms" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>博客内容管理</h3>
+      <p>博客文章的增删改查、分类、标签</p>
+    </div>
+  </div>
+  
+  <div class="option" data-choice="feedback" onclick="toggleSelect(this)">
+    <div class="letter">D</div>
+    <div class="content">
+      <h3>反馈表单处理</h3>
+      <p>接收用户反馈、存储到数据库或发送邮件</p>
+    </div>
+  </div>
+  
+  <div class="option" data-choice="docs-render" onclick="toggleSelect(this)">
+    <div class="letter">E</div>
+    <div class="content">
+      <h3>文档渲染服务</h3>
+      <p>支持 Markdown 文档的渲染和搜索</p>
+    </div>
+  </div>
+  
+  <div class="option" data-choice="analytics" onclick="toggleSelect(this)">
+    <div class="letter">F</div>
+    <div class="content">
+      <h3>数据统计</h3>
+      <p>访问量、用户行为、API 调用等数据统计</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <p class="label">提示</p>
+  <p style="font-size: 14px; line-height: 1.6;">如果不确定，先选择核心功能，后续可以再扩展。起步阶段建议至少包含 A（Annie API）和 E（文档渲染）。</p>
+</div>
