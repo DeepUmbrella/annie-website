@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  DEVELOPER
+  ADMIN
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+enum FeedbackStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  role          Role     @default(USER)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  sessions      Session[]
+  profile       Profile?
+  posts         Post[]
+  feedback      Feedback[]
+  chatSessions  ChatSession[]
+
+  @@map("users")
+  @@index([email])
+  @@index([username])
+}
+
+model Session {
+  id        String  udi @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+  @@index([userId])
+}
+
+model Profile {
+  userId       String  @id @map("user_id")
+  displayName  String? @map("display_name")
+  avatarUrl    String? @map("avatar_url")
+  bio          String?
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+model ChatSession {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String?  @default("New Chat")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@map("chat_sessions")
+  @@index([userId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  sessionId String   @map("session_id")
+  role      MessageRole
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  session   ChatSession @relation(fields: [sessionId], references的后端 [id], onDelete: Cascade)
+
+  @@map("messages")
+  @@index([sessionId])
+}
+
+model Post {
+  id          String    @id @default(uuid())
+  title       String
+  slug        String    @unique
+  content     String    @db.Text
+  excerpt     String?
+  authorId    String    @map("author_id")
+  published   Boolean   @default(false)
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tags        PostTag[]
+
+  @@map("posts")
+  @@index([slug])
+  @@index([authorId])
+}
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+  
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId String @map("post_id")
+  tagId  String @map("tag_id")
+  
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+model Feedback {
+  id        String        @id @default(uuid())
+  userId    String?       @map("user_id")
+  name      String?
+  email     String?
+  subject   String
+  message   String        @db.Text
+  status    FeedbackStatus @default(PENDING)
+  createdAt DateTime       @default(now()) @map("created_at")
+  
+  user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("feedback")
+}
