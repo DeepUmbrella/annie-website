@@ -57,22 +57,25 @@ server {
 }
 EOF
 
-echo "==> 1) 安装 Git"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v git >/dev/null 2>&1; then
-  sudo apt update
+echo "==> 1) 安装基础环境（Git / Docker / Nginx）"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'set -e
+sudo apt update
+
+if ! command -v git >/dev/null 2>&1; then
   sudo apt install -y git
 fi
-git --version'
 
-echo "==> 2) 安装 Docker"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v docker >/dev/null 2>&1; then
-  sudo apt update
+if ! command -v docker >/dev/null 2>&1; then
   sudo apt install -y ca-certificates curl gnupg lsb-release
   sudo install -m 0755 -d /etc/apt/keyrings
-  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  if [ ! -f /etc/apt/keyrings/docker.gpg ]; then
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  fi
   sudo chmod a+r /etc/apt/keyrings/docker.gpg
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-  sudo apt update
+  if [ ! -f /etc/apt/sources.list.d/docker.list ]; then
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt update
+  fi
   sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 
@@ -81,11 +84,19 @@ if ! command -v docker >/dev/null 2>&1; then
   exit 1
 fi
 
-sudo systemctl enable docker
-sudo systemctl restart docker
-docker --version'
+if ! command -v nginx >/dev/null 2>&1; then
+  sudo apt install -y nginx
+fi
 
-echo "==> 3) 安装 Docker 镜像加速"
+sudo systemctl enable docker
+sudo systemctl enable nginx
+
+git --version
+docker --version
+docker compose version
+nginx -v'
+
+echo "==> 2) 配置 Docker 镜像加速"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mkdir -p /etc/docker && sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
 {
   \"registry-mirrors\": [\"${ALIYUN_MIRROR}\"]
@@ -94,29 +105,15 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl restart docker"
 
-echo "==> 4) 确认 Docker Compose（仅使用新版本插件）"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if docker compose version >/dev/null 2>&1; then
-  docker compose version
-else
-  sudo apt update
-  sudo apt install -y docker-compose-plugin
-  docker compose version
-fi'
+echo "==> 3) 启动 Nginx"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'sudo systemctl restart nginx'
 
-echo "==> 5) 安装 Nginx"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v nginx >/dev/null 2>&1; then
-  sudo apt update
-  sudo apt install -y nginx
-fi
-sudo systemctl enable nginx
-sudo systemctl restart nginx'
-
-echo "==> 6) 上传 SSL 证书"
+echo "==> 4) 上传 SSL 证书"
 scp "${SSH_OPTS[@]}" "$SSL_CERT_PATH" "$SSH_TARGET:/tmp/${DOMAIN}.pem"
 scp "${SSH_OPTS[@]}" "$SSL_KEY_PATH" "$SSH_TARGET:/tmp/${DOMAIN}.key"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mkdir -p /etc/nginx/ssl && sudo mv /tmp/${DOMAIN}.pem /etc/nginx/ssl/${DOMAIN}.crt && sudo mv /tmp/${DOMAIN}.key /etc/nginx/ssl/${DOMAIN}.key && sudo chmod 644 /etc/nginx/ssl/${DOMAIN}.crt && sudo chmod 600 /etc/nginx/ssl/${DOMAIN}.key"
 
-echo "==> 7) 配置 Nginx 站点"
+echo "==> 5) 配置 Nginx 站点"
 scp "${SSH_OPTS[@]}" "$TMP_NGINX_CONF" "$SSH_TARGET:/tmp/annie-website.conf"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'sudo mv /tmp/annie-website.conf /etc/nginx/conf.d/annie-website.conf && sudo nginx -t && sudo systemctl reload nginx'
 
