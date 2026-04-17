@@ -23,7 +23,8 @@ Annie AI 助手介绍网站 - 前后端分离架构
 
 ### 部署
 - **容器编排:** Docker Compose
-- **反向代理:** Nginx
+- **反向代理:** 宿主机 Nginx（HTTPS / 域名入口）
+- **前端静态服务:** frontend 容器内 Nginx（仅托管静态文件）
 - **部署方式:** GitHub 拉取 + setup/deploy 两步脚本
 
 ## 快速开始
@@ -126,7 +127,7 @@ annie-website/
 - **redis:** Redis 7 缓存服务
 - **meilisearch:** MeiliSearch v1.3 搜索引擎
 - **backend:** Nest.js 后端服务
-- **frontend:** React 前端服务
+- **frontend:** React 前端静态站点容器（容器内 Nginx 仅服务 `dist/` 文件）
 
 ## 开发命令
 
@@ -187,7 +188,7 @@ export MEILISEARCH_MASTER_KEY=<strong-key>
 bash scripts/deploy-app.sh
 ```
 
-详细说明参见 `docs/deployment.md`。
+详细说明参见 `docs/deployment.md`。其中宿主机 Nginx 和 frontend 容器内 Nginx 的职责是分开的，前者负责 HTTPS 和反向代理，后者只负责前端静态文件托管。
 
 ## 许可证
 
