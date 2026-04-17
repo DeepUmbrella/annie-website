@@ -1,5 +1,5 @@
 #!/bin/bash
-# Annie 服务器首次环境设置脚本
+# Annie 服务器首次环境设置脚本（Ubuntu 22.04）
 # 首次部署前执行一次，安装 Docker / Docker Compose / Nginx，配置 Docker 镜像加速和 SSL
 
 set -euo pipefail
@@ -59,22 +59,21 @@ EOF
 
 echo "==> 1) 安装 Git"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v git >/dev/null 2>&1; then
-  sudo dnf install -y git || sudo yum install -y git
+  sudo apt update
+  sudo apt install -y git
 fi
-sudo git --version'
+git --version'
 
 echo "==> 2) 安装 Docker"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v docker >/dev/null 2>&1; then
-  sudo yum install -y yum-utils device-mapper-persistent-data lvm2
-  
-  # 先尝试 Docker 官方仓库，失败则切换到阿里云 Docker 镜像仓库
-  if ! sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo; then
-    echo "官方仓库添加失败，切换到阿里云 Docker 镜像仓库"
-    sudo rm -f /etc/yum.repos.d/docker-ce.repo
-    sudo curl -fsSL https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo -o /etc/yum.repos.d/docker-ce.repo
-  fi
-
-  sudo dnf install -y docker-ce docker-ce-cli containerd.io || sudo yum install -y docker-ce docker-ce-cli containerd.io
+  sudo apt update
+  sudo apt install -y ca-certificates curl gnupg lsb-release
+  sudo install -m 0755 -d /etc/apt/keyrings
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+  sudo chmod a+r /etc/apt/keyrings/docker.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt update
+  sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 fi
 
 if ! command -v docker >/dev/null 2>&1; then
@@ -84,7 +83,7 @@ fi
 
 sudo systemctl enable docker
 sudo systemctl restart docker
-sudo docker --version'
+docker --version'
 
 echo "==> 3) 安装 Docker 镜像加速"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "sudo mkdir -p /etc/docker && sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
@@ -99,14 +98,15 @@ echo "==> 4) 确认 Docker Compose（仅使用新版本插件）"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if docker compose version >/dev/null 2>&1; then
   docker compose version
 else
-  echo "docker compose 插件未安装，尝试安装 docker-compose-plugin"
-  sudo dnf install -y docker-compose-plugin || sudo yum install -y docker-compose-plugin
+  sudo apt update
+  sudo apt install -y docker-compose-plugin
   docker compose version
 fi'
 
 echo "==> 5) 安装 Nginx"
 ssh "${SSH_OPTS[@]}" "$SSH_TARGET" 'if ! command -v nginx >/dev/null 2>&1; then
-  sudo dnf install -y nginx || sudo yum install -y nginx
+  sudo apt update
+  sudo apt install -y nginx
 fi
 sudo systemctl enable nginx
 sudo systemctl restart nginx'
