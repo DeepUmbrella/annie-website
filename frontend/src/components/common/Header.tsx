@@ -1,7 +1,7 @@
-import { Menu, Button } from 'antd';
+import { Layout, Menu, Button } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../store';
+import type { RootState } from '../../store';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -17,7 +17,8 @@ const Header = () => {
     { key: 'home', label: <Link to="/">首页</Link> },
     { key: 'features', label: <Link to="/features">功能</Link> },
     { key: 'docs', label: <Link to="/docs">文档</Link> },
-    { key: 'blog', label: <Link to="/blog">博客博客, label: <Link to="/contact">联系我们</Link> },
+    { key: 'blog', label: <Link to="/blog">博客</Link> },
+    { key: 'contact', label: <Link to="/contact">联系我们</Link> },
   ];
 
   return (
