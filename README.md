@@ -44,7 +44,7 @@ cp .env.example .env
 
 # 编辑 .env 文件，配置必要的环境变量
 # - POSTGRES_PASSWORD: 数据库密码
-# - MEILI_MASTER_KEY: MeiliSearch 主密钥
+# - MEILISEARCH_MASTER_KEY: MeiliSearch 主密钥
 # - JWT_SECRET: JWT 签名密钥
 ```
 
@@ -64,7 +64,7 @@ docker compose down
 ### 4. 访问应用
 
 - 前端: http://localhost:3000
-- 后端 API: http://localhost:4000
+- 后端 API: http://localhost:3001
 - MeiliSearch: http://localhost:7700
 
 ## 手动动启动（不使用 Docker）

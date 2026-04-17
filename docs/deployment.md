@@ -79,6 +79,7 @@ DATABASE_URL=postgresql://annie:<strong-password>@postgres:5432/annie_db?schema=
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=<strong-key>
+MEILI_MASTER_KEY=<strong-key>
 JWT_SECRET=<strong-secret>
 JWT_EXPIRES_IN=7d
 ANNIE_API_URL=https://<annie-api-host>
@@ -153,10 +154,12 @@ docker compose logs -f
 
 ### 7. 初始化数据库
 
+如果你是通过 `scripts/deploy-app.sh` 部署，这一步脚本已经自动执行。
+
+手动执行时可使用：
+
 ```bash
-cd backend
-npx prisma generate
-npx prisma migrate deploy
+docker compose exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
 ```
 
 ### 8. 设置自动续期 SSL
