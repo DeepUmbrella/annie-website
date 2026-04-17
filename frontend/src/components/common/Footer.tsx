@@ -1,12 +1,12 @@
 const Footer = () => {
   return (
-    <footer className="border-t border-white/10 bg-black/10">
+    <footer className="border-t border-white/8 bg-black/20">
       <div className="mx-auto grid max-w-8xl gap-10 px-6 py-12 text-sm text-annie-muted md:grid-cols-[1.4fr_1fr_1fr] md:px-8">
         {/* Brand */}
         <div>
           <h3 className="mb-4 text-base font-semibold text-white">Annie AI</h3>
           <p className="leading-6">
-            面向个人、团队与开发者的 AI 助手平台，连接知识、工作流与自动化能力。
+            连接知识、对话与自动化，为个人与团队提供统一的 AI 工作入口。
           </p>
         </div>
 
@@ -39,7 +39,7 @@ const Footer = () => {
 
         {/* Contact / Resources */}
         <div>
-          <h3 className="mb-4 text-base-base font-semibold text-white">资源</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">资源</h3>
           <ul className="space-y-3">
             <li>
               <a href="/docs" className="transition hover:text-white">
