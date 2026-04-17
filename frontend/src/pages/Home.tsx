@@ -29,21 +29,24 @@ const Home = () => {
   return (
     <div>
       {/* Hero Section */}
-      <Section className="pt-12 md:pt-20">
+      <Section className="relative overflow-hidden pt-14 md:pt-24">
+        <div className="absolute inset-x-0 top-0 -z-10 h-[420px] bg-annie-hero blur-3xl" />
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-8">
-            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-annie-lavender">
+            <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
               AI Assistant Platform
             </span>
             <div className="space-y-4">
-              <h1 className="max-w-3xl text-4xl font-semibold tracking-tight text-white md:text-6xl">
-                让 Annie 成为你的智能协作中枢
+              <h1 className="max-w-4xl text-5xl font-semibold leading-[0.95] tracking-tight text-white md:text-7xl">
+                让 <span className="bg-gradient-to-r from-white via-annie-lavender to-annie-cyan bg-clip-text text-transparent">Annie</span>
+                <br />
+                成为你的智能协作中枢
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-annie-muted md:text-lg">
-                面向个人、团队与开发者的 AI 助手平台，连接知识、工作流与自动化能力。
+              <p className="max-w-2xl text-base leading-7 text-white/70 md:text-lg">
+                连接知识、对话与自动化能力，为个人、团队与开发者提供统一的 AI 工作入口。
               </p>
             </div>
-            <div className="flex flex-wrap gap-4">
+            <div className="flex flex-wrap gap-4 pt-2">
               <ButtonLink to="/register">立即体验</ButtonLink>
               <ButtonLink to="/docs" variant="secondary">
                 查看文档
@@ -51,38 +54,62 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Hero Visual Cards */}
+          {/* Hero Visual Panel */}
           <div className="relative space-y-4">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-annie-purple" />
-                <div className="h-2 w-2 rounded-full bg-annie-lavender" />
-                <div className="h-2 w-2 rounded-full bg-annie-cyan" />
+            <div className="relative mx-auto w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-glow-lg backdrop-blur-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-2.5 w-2.5 rounded-full bg-annie-purple" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-annie-lavender" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-annie-cyan" />
+                </div>
+                <div className="text-xs text-annie-cyan">v2.1.0</div>
               </div>
-              <div className="space-y-2 text-sm text-annie-muted">
-                <div className="flex items-start gap-3">
-                  <span className="mt-1 text-annie-lavender">▸</span>
-                  <p>智能对话引擎已就绪</p>
+              <div className="space-y-3 text-sm">
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-annie-lavender">💬</span>
+                    <p className="font-medium text-white">智能对话引擎</p>
+                    <span className="ml-auto text-xs text-annie-cyan">运行中</span>
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="mt-1 text-annie-purple">▸</span>
-                  <p>知识库索引完成</p>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-annie-purple">📚</span>
+                    <p className="font-medium text-white">知识检索系统</p>
+                    <span className="ml-auto text-xs text-annie-cyan">已索引</span>
+                  </div>
                 </div>
-                <div className="flex items-start gap-3">
-                  <span className="mt-1 text-annie-cyan">▸</span>
-                  <p>工作流节点加载正常</p>
+                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-annie-cyan">⚡</span>
+                    <p className="font-medium text-white">自动化工作流</p>
+                    <span className="ml-auto text-xs text-annie-cyan">就绪</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="relative -ml-4 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
+            <div className="relative -ml-8 -mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-glow backdrop-blur-xl">
               <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-annie-purple/20">
-                  <span className="text-annie-purple">⚡</span>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-cyan/20">
+                  <span className="text-annie-cyan">⚡</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">快速响应</p>
-                  <p className="text-xs text-annie-muted">平均延迟 &lt;200ms</p>
+                  <p className="text-sm font-medium text-white">响应速度</p>
+                  <p className="text-xs text-white/60">平均延迟 &lt;200ms</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="relative -mr-6 ml-auto w-4/5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-glow backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-purple/20">
+                  <span className="text-annie-purple">🔒</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">安全加密</p>
+                  <p className="text-xs text-white/60">端到端保护</p>
                 </div>
               </div>
             </div>
