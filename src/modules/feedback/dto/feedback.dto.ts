@@ -1,8 +1,14 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
 
+export enum FeedbackStatusDto {
+  PENDING = 'PENDING',
+  REVIEWED = 'REVIEWED',
+  RESOLVED = 'RESOLVED',
+}
+
 export class SubmitFeedbackDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   name?: string;
 
   @IsString()
@@ -11,14 +17,14 @@ export class SubmitFeedbackDto {
 
   @IsString()
   @IsNotEmpty()
-  subject: string;
+  subject!: string;
 
   @IsString()
   @IsNotEmpty()
-  message: string;
+  message!: string;
 }
 
 export class UpdateFeedbackDto {
-  @IsEnum(['PENDING', 'REVIEWED', 'RESOLVED'])
-  status: 'PENDING' | 'REVIEWED' | 'RESOLVED';
+  @IsEnum(FeedbackStatusDto)
+  status!: FeedbackStatusDto;
 }

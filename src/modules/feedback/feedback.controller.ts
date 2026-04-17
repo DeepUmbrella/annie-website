@@ -10,17 +10,8 @@ export class FeedbackController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async submitFeedback(
-    @CurrentUser() userId: string,
-    @Body() dto: SubmitFeedbackDto,
-  ) {
-    return this.feedbackService.submitFeedback(
-      userId,
-      dto.name,
-      dto.email,
-      dto.subject,
-      dto.message,
-    );
+  async submitFeedback(@CurrentUser() userId: string, @Body() dto: SubmitFeedbackDto) {
+    return this.feedbackService.submitFeedback(userId, dto.name, dto.email, dto.subject, dto.message);
   }
 
   @Get()
@@ -31,10 +22,7 @@ export class FeedbackController {
 
   @Put(':id')
   @UseGuards(JwtAuthGuard)
-  async updateFeedbackStatus(
-    @Param('id') id: string,
-    @Body() dto: UpdateFeedbackDto,
-  ) {
+  async updateFeedbackStatus(@Param('id') id: string, @Body() dto: UpdateFeedbackDto) {
     return this.feedbackService.updateFeedbackStatus(id, dto.status);
   }
 }

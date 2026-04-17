@@ -28,7 +28,7 @@ export class ChatController {
     @CurrentUser() userId: string,
     @Body() dto: CreateSessionDto,
   ) {
-    return this.chatService.createSession(userId, dto.title);
+    return this.chatService.createSession(userId, dto.title ?? 'New Chat');
   }
 
   @Delete('sessions/:sessionId')
