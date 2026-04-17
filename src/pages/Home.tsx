@@ -195,8 +195,8 @@ const Home = () => {
           <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
             Capabilities
           </span>
-          <h2 className="mb-4 mt-4 text-3xl font-semibold text-white md:text-4xl">核心能力</h2>
-          <p className="mx-auto max-w-2xl text-annie-muted">
+          <h2 className="mb-4 mt-4 text-4xl font-semibold tracking-[-0.02em] text-white md:text-5xl">核心能力</h2>
+          <p className="mx-auto max-w-2xl text-base leading-8 text-white/70 md:text-lg">
             Annie 提供从基础对话到高级自动化的全链路能力
           </p>
         </div>
@@ -210,8 +210,8 @@ const Home = () => {
               <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-annie-cyan">
                 {String(index + 1).padStart(2, '0')}
               </div>
-              <h3 className="mb-2 text-lg font-semibold text-white">{capability.title}</h3>
-              <p className="text-sm text-annie-muted leading-6">{capability.description}</p>
+              <h3 className="mb-3 text-xl font-semibold text-white">{capability.title}</h3>
+              <p className="text-sm leading-7 text-white/70">{capability.description}</p>
             </div>
           ))}
         </div>
@@ -223,8 +223,8 @@ const Home = () => {
           <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
             Scenarios
           </span>
-          <h2 className="mb-4 mt-4 text-3xl font-semibold text-white md:text-4xl">使用场景</h2>
-          <p className="mx-auto max-w-2xl text-annie-muted">
+          <h2 className="mb-4 mt-4 text-4xl font-semibold tracking-[-0.02em] text-white md:text-5xl">使用场景</h2>
+          <p className="mx-auto max-w-2xl text-base leading-8 text-white/70 md:text-lg">
             适配不同角色与需求的灵活应用方式
           </p>
         </div>
@@ -241,7 +241,7 @@ const Home = () => {
                 </span>
               </div>
               <h3 className="mb-3 text-xl font-semibold text-white">{scenario.title}</h3>
-              <p className="text-sm text-annie-muted leading-6">{scenario.description}</p>
+              <p className="text-sm leading-7 text-white/70">{scenario.description}</p>
             </div>
           ))}
         </div>
@@ -251,10 +251,10 @@ const Home = () => {
       <Section className="pb-20">
         <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] px-8 py-14 text-center shadow-glow-lg">
           <div className="absolute inset-x-10 top-0 h-24 rounded-full bg-annie-lavender/20 blur-3xl" />
-          <h2 className="mb-4 text-3xl font-semibold text-white md:text-4xl">
+          <h2 className="mb-4 text-4xl font-semibold tracking-[-0.02em] text-white md:text-5xl">
             准备好开始使用 Annie 了吗？
           </h2>
-          <p className="mx-auto mb-8 max-w-2xl text-annie-muted md:text-lg">
+          <p className="mx-auto mb-8 max-w-2xl text-base leading-8 text-white/70 md:text-lg">
             用更统一的 AI 交互体验连接知识、协作与自动化能力。
           </p>
           <div className="flex justify-center gap-4">
