@@ -177,7 +177,8 @@ const Home = () => {
 
       {/* Bottom CTA */}
       <Section className="pb-20">
-        <div className="rounded-3xl border border-white/10 bg-white/5 px-8 py-12 text-center shadow-glow md:px-12 md:py-16">
+        <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] px-8 py-14 text-center shadow-glow-lg">
+          <div className="absolute inset-x-10 top-0 h-24 rounded-full bg-annie-lavender/20 blur-3xl" />
           <h2 className="mb-4 text-3xl font-semibold text-white md:text-4xl">
             准备好开始使用 Annie 了吗？
           </h2>
