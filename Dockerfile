@@ -12,6 +12,11 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Generate Prisma client before TypeScript build
+ARG DATABASE_URL=postgresql://annie:change_this_password_in_production@postgres:5432/annie_db?schema=public
+ENV DATABASE_URL=${DATABASE_URL}
+RUN npx prisma generate
+
 # Build application
 RUN npm run build
 
