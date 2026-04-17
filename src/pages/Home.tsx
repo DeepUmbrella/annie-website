@@ -56,41 +56,84 @@ const Home = () => {
 
           {/* Hero Visual Panel */}
           <div className="relative space-y-4">
-            <div className="relative mx-auto w-full max-w-xl rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-glow-lg backdrop-blur-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-2.5 w-2.5 rounded-full bg-annie-purple" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-annie-lavender" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-annie-cyan" />
-                </div>
-                <div className="text-xs text-annie-cyan">v2.1.0</div>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
+            <div className="relative mx-auto w-full max-w-2xl rounded-[2.25rem] border border-white/12 bg-white/[0.05] p-6 shadow-glow-lg backdrop-blur-2xl xl:p-7">
+              <div className="space-y-4">
+                {/* Status Bar */}
+                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/10 px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-annie-lavender">💬</span>
-                    <p className="font-medium text-white">智能对话引擎</p>
-                    <span className="ml-auto text-xs text-annie-cyan">运行中</span>
+                    <span className="h-2.5 w-2.5 rounded-full bg-annie-cyan" />
+                    <span className="text-sm font-medium text-white">Annie Core</span>
+                  </div>
+                  <span className="rounded-full border border-annie-cyan/20 bg-annie-cyan/10 px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-annie-cyan">
+                    Online
+                  </span>
+                </div>
+
+                {/* Main Workspace Summary */}
+                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-medium text-white/80">工作区摘要</span>
+                    <span className="text-xs text-annie-cyan">活跃</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-xl bg-black/10 px-3 py-2 text-center">
+                      <div className="text-lg font-semibold text-white">3</div>
+                      <div className="text-[10px] text-white/50">对话</div>
+                    </div>
+                    <div className="rounded-xl bg-black/10 px-3 py-2 text-center">
+                      <div className="text-lg font-semibold text-white">128</div>
+                      <div className="text-[10px] text-white/50">文档</div>
+                    </div>
+                    <div className="rounded-xl bg-black/10 px-3 py-2 text-center">
+                      <div className="text-lg font-semibold text-white">5</div>
+                      <div className="text-[10px] text-white/50">工作流</div>
+                    </div>
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-annie-purple">📚</span>
-                    <p className="font-medium text-white">知识检索系统</p>
-                    <span className="ml-auto text-xs text-annie-cyan">已索引</span>
+
+                {/* Capability Modules */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-annie-lavender">💬</span>
+                      <span className="text-xs font-medium text-white">对话引擎</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-white/50">模型就绪</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-annie-cyan" />
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-annie-purple">📚</span>
+                      <span className="text-xs font-medium text-white">知识库</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-white/50">已索引</span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-annie-cyan" />
+                    </div>
                   </div>
                 </div>
-                <div className="rounded-xl border border-white/10 bg-white/[0.04] p-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-annie-cyan">⚡</span>
-                    <p className="font-medium text-white">自动化工作流</p>
-                    <span className="ml-auto text-xs text-annie-cyan">就绪</span>
+
+                {/* Status Bar with Emphasis */}
+                <div className="rounded-2xl border-l-2 border-l-annie-cyan border-white/10 bg-gradient-to-r from-annie-cyan/5 to-transparent p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-annie-cyan" />
+                      <span className="text-xs font-medium text-white">系统状态</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider">Secure</span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider">Workflow Ready</span>
+                      <span className="text-[10px] text-white/50 uppercase tracking-wider">Knowledge Synced</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="relative -ml-8 -mt-6 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-glow backdrop-blur-xl">
+            {/* Floating Module 1 - Response Speed */}
+            <div className="absolute -left-8 top-16 rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 shadow-glow backdrop-blur-xl">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-cyan/20">
                   <span className="text-annie-cyan">⚡</span>
@@ -102,14 +145,41 @@ const Home = () => {
               </div>
             </div>
 
-            <div className="relative -mr-6 ml-auto w-4/5 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-glow backdrop-blur-xl">
+            {/* Floating Module 2 - Knowledge Access */}
+            <div className="absolute -right-6 top-24 w-56 rounded-2xl border border-white/10 bg-white/[0.05] p-4 shadow-glow backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-lavender/20">
+                  <span className="text-annie-lavender">📚</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">知识接入</p>
+                  <p className="text-xs text-white/60">已连接 12 个源</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Module 3 - Security Status */}
+            <div className="absolute -right-6 bottom-12 w-52 rounded-2xl border border-white/10 bg-white/[0.05] p-4 shadow-cyan-glow backdrop-blur-xl">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-purple/20">
                   <span className="text-annie-purple">🔒</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">安全加密</p>
-                  <p className="text-xs text-white/60">端到端保护</p>
+                  <p className="text-sm font-medium text-white">安全状态</p>
+                  <p className="text-xs text-white/60">端到端加密</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating Module 4 - Workflow Nodes */}
+            <div className="absolute -left-12 -bottom-4 w-60 rounded-2xl border border-white/10 bg-white/[0.05] p-4 shadow-glow backdrop-blur-xl">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-annie-cyan/20">
+                  <span className="text-annie-cyan">🔄</span>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">工作流节点</p>
+                  <p className="text-xs text-white/60">5 个活跃节点</p>
                 </div>
               </div>
             </div>
