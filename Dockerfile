@@ -13,7 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build application
-的后端 RUN npm run build
+RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS runner
