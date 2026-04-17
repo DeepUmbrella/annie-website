@@ -23,9 +23,9 @@ function App() {
         },
       }}>
         <Router>
-          <Layout style={{ minHeight: '100vh', background: '#Fbe4d8' }}>
+          <Layout className="min-h-screen bg-transparent text-annie-text">
             <Header />
-            <Layout.Content>
+            <Layout.Content className="flex-1">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/features" element={<Features />} />
