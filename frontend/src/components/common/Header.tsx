@@ -22,7 +22,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 px-4 pt-4 md:px-6">
       <div className="mx-auto flex max-w-8xl items-center justify-between rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
-        <Link to="/" className="text-lg font-semibold tracking-tight text-white">
+        <Link to="/" className="text-xl font-bold tracking-[-0.02em] text-white md:text-2xl">
           Annie AI
         </Link>
 
