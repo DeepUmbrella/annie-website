@@ -38,18 +38,18 @@ const Header = () => {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-fit items-center justify-end gap-3">
           {user ? (
             <>
               <button
                 onClick={() => navigate('/profile')}
-                className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
+                className="rounded-full border border-white/10 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white backdrop-blur-md transition hover:bg-white/[0.12]"
               >
                 {user.username}
               </button>
               <button
                 onClick={handleLogout}
-                className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
+                className="rounded-full border border-white/10 bg-white/[0.06] px-4 py-2.5 text-sm text-white backdrop-blur-md transition hover:bg-white/[0.12]"
               >
                 退出
               </button>
@@ -58,13 +58,13 @@ const Header = () => {
             <>
               <button
                 onClick={() => navigate('/login')}
-                className="rounded-full border border-white/10 bg-white/8 px-5 py-2.5 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
+                className="rounded-full border border-white/10 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-white backdrop-blur-md transition hover:bg-white/[0.12]"
               >
                 登录
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="rounded-full bg-gradient-to-r from-annie-purple to-annie-lavender px-5 py-2.5 text-sm font-semibold text-white shadow-glow-lg transition-all hover:-translate-y-0.5 hover:brightness-110"
+                className="rounded-full bg-gradient-to-r from-annie-purple to-annie-lavender px-6 py-2.5 text-sm font-semibold text-white shadow-glow-lg transition-all hover:-translate-y-0.5 hover:brightness-110"
               >
                 注册
               </button>
