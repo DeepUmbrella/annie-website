@@ -78,8 +78,8 @@ const Features = () => {
                 <div className="flex items-start gap-4">
                   <span className="text-4xl">{feature.icon}</span>
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-                    <p className="text-sm leading-6 text-white/65 mb-4">{feature.description}</p>
+                    <h3 className="mb-3 text-xl font-semibold text-white">{feature.title}</h3>
+                    <p className="mb-4 text-sm leading-7 text-white/72">{feature.description}</p>
                     <List
                       size="small"
                       dataSource={feature.items}
@@ -98,8 +98,8 @@ const Features = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="text-2xl font-semibold text-white mb-4">准备好开始了吗？</h2>
-          <p className="text-base text-white/65 mb-8">
+          <h2 className="mb-4 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">准备好开始了吗？</h2>
+          <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
             立即注册 Annie，开启你的 AI 助力之旅。免费开始，无需信用卡。
           </p>
           <ButtonLink to="/register">免费注册</ButtonLink>
