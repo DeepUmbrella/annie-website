@@ -1,7 +1,9 @@
-import { Typography, Card, Form, Input, Button, message, Row, Col, List } from 'antd';
+import { Form, Input, Button, message, List } from 'antd';
 import axios from 'axios';
-
-const { Title, Paragraph } = Typography;
+import PageHero from '../components/common/PageHero';
+import GlassCard from '../components/common/GlassCard';
+import Section from '../components/common/Section';
+import ButtonLink from '../components/common/ButtonLink';
 
 const Contact = () => {
   const [form] = Form.useForm();
@@ -23,80 +25,129 @@ const Contact = () => {
   };
 
   return (
-    <div style={{ padding: '48px 24px' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <Title level={1} style={{ textAlign: 'center', marginBottom: '48px', color: '#190019' }}>
-          联系我们
-        </Title>
+    <div>
+      <PageHero
+        eyebrow="Contact"
+        title="与 Annie 团队取得联系"
+        description="无论是产品咨询、技术问题还是合作意向，我们随时准备帮助你。"
+      />
 
-        <Row gutter={[24, 24]}>
-          <Col xs={24} md={12}>
-            <Card title="联系我们" style={{ height: '100%', background: '#Fbe4d8' }}>
-              <Paragraph>
-                如果你有任何问题或建议，欢迎与我们联系。
-                我们会尽快回复你的消息。
-              </Paragraph>
-              <List>
-                <List.Item>📧 邮箱: support@annie.ai</List.Item>
-                <List.Item>🌐 网站: https://annie.ai</List.Item>
-                <List.Item>💬 社区: https://community.annie.ai</List.Item>
-              </List>
-            </Card>
-          </Col>
-          <Col xs={24} md={12}>
-            <Card title="提交反馈">
-              <Form
-                form={form}
-                onFinish={handleSubmit}
-                layout="vertical"
-              >
-                <Form.Item
-                  name="name"
-                  label="姓名"
+      <Section>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <GlassCard className="p-8">
+              <h3 className="text-lg font-semibold text-white mb-4">联系方式</h3>
+              <List
+                size="small"
+                split={false}
+                dataSource={[
+                  { icon: '📧', label: '邮箱', value: 'support@annie.ai' },
+                  { icon: '🌐', label: '网站', value: 'https://annie.ai' },
+                  { icon: '💬', label: '社区', value: 'https://community.annie.ai' },
+                ]}
+                renderItem={item => (
+                  <List.Item className="mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{item.icon}</span>
+                      <div>
+                        <p className="text-xs text-white/45">{item.label}</p>
+                        <p className="text-sm text-white/85">{item.value}</p>
+                      </div>
+                    </div>
+                  </List.Item>
+                )}
+              />
+            </GlassCard>
+
+            <div className="md:col-span-2 lg:col-span-2">
+              <GlassCard className="p-8 h-full">
+                <h3 className="text-lg font-semibold text-white mb-6">提交反馈</h3>
+                <Form
+                  form={form}
+                  onFinish={handleSubmit}
+                  layout="vertical"
                 >
-                  <Input placeholder="你的姓名（可选）" />
-                </Form.Item>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Form.Item
+                      name="name"
+                      label={<span className="text-white/85">姓名</span>}
+                    >
+                      <Input 
+                        placeholder="你的姓名（可选）"
+                        className="bg-white/[0.03] border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </Form.Item>
 
-                <Form.Item
-                  name="email"
-                  label="邮箱"
-                  rules={[
-                    { type: 'email', message: '请输入有效的邮箱地址' },
-                  ]}
-                >
-                  <Input placeholder="你的邮箱（可选）" />
-                </Form.Item>
+                    <Form.Item
+                      name="email"
+                      label={<span className="text-white/85">邮箱</span>}
+                      rules={[
+                        { type: 'email', message: '请输入有效的邮箱地址' },
+                      ]}
+                    >
+                      <Input 
+                        placeholder="你的邮箱（可选）"
+                        className="bg-white/[0.03] border-white/10 text-white placeholder:text-white/40"
+                      />
+                    </Form.Item>
+                  </div>
 
-                <Form.Item
-                  name="subject"
-                  label="主题"
-                  rules={[
-                    { required: true, message: '请输入主题' },
-                  ]}
-                >
-                  <Input placeholder="反馈主题" />
-                </Form.Item>
+                  <Form.Item
+                    name="subject"
+                    label={<span className="text-white/85">主题</span>}
+                    rules={[
+                      { required: true, message: '请输入主题' },
+                    ]}
+                  >
+                    <Input 
+                      placeholder="反馈主题"
+                      className="bg-white/[0.03] border-white/10 text-white placeholder:text-white/40"
+                    />
+                  </Form.Item>
 
-                <Form.Item
-                  name="message"
-                  label="消息"
-                  rules={[
-                    { required: true, message: '请输入消息内容' },
-                  ]}
-                >
-                  <Input.TextArea rows={4} placeholder="你的消息" />
-                </Form.Item>
+                  <Form.Item
+                    name="message"
+                    label={<span className="text-white/85">消息</span>}
+                    rules={[
+                      { required: true, message: '请输入消息内容' },
+                    ]}
+                  >
+                    <Input.TextArea 
+                      rows={6}
+                      placeholder="你的消息"
+                      className="bg-white/[0.03] border-white/10 text-white placeholder:text-white/40"
+                    />
+                  </Form.Item>
 
-                <Form.Item>
-                  <Button type="primary" htmlType="submit" block>
-                    提交反馈
-                  </Button>
-                </Form.Item>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-      </div>
+                  <Form.Item className="mb-0">
+                    <Button 
+                      type="primary"
+                      htmlType="submit"
+                      block
+                      className="h-12 text-base font-semibold bg-gradient-to-r from-annie-purple via-fuchsia-500 to-annie-cyan border-0 hover:brightness-110"
+                    >
+                      提交反馈
+                    </Button>
+                  </Form.Item>
+                </Form>
+              </GlassCard>
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
+        <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
+          <h2 className="text-2xl font-semibold text-white mb-4">需要更多帮助？</h2>
+          <p className="text-base text-white/65 mb-8">
+            查看我们的文档和常见问题，或者加入社区获取更多支持。
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <ButtonLink to="/docs">查看文档</ButtonLink>
+            <ButtonLink to="/features" variant="secondary">探索功能</ButtonLink>
+          </div>
+        </GlassCard>
+      </Section>
     </div>
   );
 };
