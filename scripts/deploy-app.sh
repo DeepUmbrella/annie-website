@@ -16,6 +16,8 @@ SSH_TARGET="${SSH_USER}@${SSH_HOST}"
 SSH_OPTS=(-i "$SSH_KEY" -o StrictHostKeyChecking=no)
 REPO_URL="https://github.com/DeepUmbrella/annie-website.git"
 REMOTE_DIR="/root/annie-website"
+COMPOSE_CMD="docker compose"
+DATABASE_URL="postgresql://annie:${POSTGRES_PASSWORD}@postgres:5432/annie_db?schema=public"
 
 TMP_ROOT_ENV="$(mktemp)"
 TMP_BACKEND_ENV="$(mktemp)"
@@ -28,10 +30,11 @@ CORS_ORIGIN=https://${DOMAIN}
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 POSTGRES_DB=annie_db
-DATABASE_URL=postgresql://annie:${POSTGRES_PASSWORD}@postgres:5432/annie_db?schema=public
+DATABASE_URL=${DATABASE_URL}
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
+MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
 JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=7d
 ANNIE_API_URL=https://annie-api.${DOMAIN}
@@ -41,10 +44,11 @@ EOF
 cat >"$TMP_BACKEND_ENV" <<EOF
 NODE_ENV=production
 PORT=3001
-DATABASE_URL=postgresql://annie:${POSTGRES_PASSWORD}@postgres:5432/annie_db?schema=public
+DATABASE_URL=${DATABASE_URL}
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
+MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
 JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=https://${DOMAIN}
@@ -74,25 +78,18 @@ if [ \"\$MIRRORS\" = '[]' ] || [ -z \"\$MIRRORS\" ]; then
   exit 1
 fi
 
-# 预拉取常用镜像，确保 compose 不直接打到 Docker Hub
-for IMG in 'postgres:15-alpine' 'redis:7-alpine' 'getmeili/meilisearch:v1.3'; do
+for IMG in 'postgres:15' 'redis:7' 'getmeili/meilisearch:v1.3'; do
   docker pull \"\$IMG\"
 done
 
-cd $REMOTE_DIR && \
-COMPOSE='docker compose'; \
-\$COMPOSE up -d --build"
+cd $REMOTE_DIR && ${COMPOSE_CMD} up -d --build"
 
 sleep 20
 
 echo "==> 4) 初始化数据库"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR/backend && \
-COMPOSE='docker compose'; \
-\$COMPOSE exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && ${COMPOSE_CMD} exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'"
 
 echo "==> 5) 检查服务状态"
-ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && \
-COMPOSE='docker compose'; \
-\$COMPOSE ps && \$COMPOSE logs --tail=20 backend"
+ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "cd $REMOTE_DIR && ${COMPOSE_CMD} ps && ${COMPOSE_CMD} logs --tail=20 backend"
 
 echo "✅ deploy 完成"
