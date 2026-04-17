@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 interface User {
   id: string;
@@ -100,7 +100,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
       })
       .addCase(registerAsync.rejected, (state, action) => {
-        state.loading = = false;
+        state.loading = false;
         state.error = action.error.message || '注册失败';
       })
       .addCase(getCurrentUserAsync.fulfilled, (state, action) => {
