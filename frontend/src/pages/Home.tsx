@@ -37,12 +37,12 @@ const Home = () => {
               AI Assistant Platform
             </span>
             <div className="space-y-4">
-              <h1 className="max-w-4xl text-5xl font-semibold leading-[0.95] tracking-tight text-white md:text-7xl">
+              <h1 className="max-w-4xl text-5xl font-semibold leading-[0.9] tracking-[-0.04em] text-white md:text-7xl xl:text-[5.4rem]">
                 让 <span className="bg-gradient-to-r from-white via-annie-lavender to-annie-cyan bg-clip-text text-transparent">Annie</span>
                 <br />
                 成为你的智能协作中枢
               </h1>
-              <p className="max-w-2xl text-base leading-7 text-white/70 md:text-lg">
+              <p className="max-w-2xl text-base leading-7 text-white/68 md:text-lg">
                 连接知识、对话与自动化能力，为个人、团队与开发者提供统一的 AI 工作入口。
               </p>
             </div>
