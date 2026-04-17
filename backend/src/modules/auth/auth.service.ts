@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../database/prisma.service';
+import { PrismaService } from '../../common/database/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
 @Injectable()
@@ -92,7 +92,6 @@ export class AuthService {
   async getCurrentUser(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { profile: true },
       select: {
         id: true,
         username: true,
@@ -110,7 +109,7 @@ export class AuthService {
     return { user };
   }
 
-  async updateProfile(userId: string, displayName: string, bio: string) {
+  async updateProfile(userId: string, displayName?: string, bio?: string) {
     const profile = await this.prisma.profile.upsert({
       where: { userId },
       create: { userId, displayName, bio },
