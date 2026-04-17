@@ -120,7 +120,10 @@ const Home = () => {
       {/* Core Capabilities */}
       <Section>
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-semibold text-white md:text-4xl">核心能力</h2>
+          <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
+            Capabilities
+          </span>
+          <h2 className="mb-4 mt-4 text-3xl font-semibold text-white md:text-4xl">核心能力</h2>
           <p className="mx-auto max-w-2xl text-annie-muted">
             Annie 提供从基础对话到高级自动化的全链路能力
           </p>
@@ -130,8 +133,11 @@ const Home = () => {
           {capabilities.map((capability, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-white/10 bg-white/5 p-6 transition-all hover:border-white/20 hover:bg-white/10"
+              className="group rounded-3xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-cyan-glow"
             >
+              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-annie-cyan">
+                {String(index + 1).padStart(2, '0')}
+              </div>
               <h3 className="mb-2 text-lg font-semibold text-white">{capability.title}</h3>
               <p className="text-sm text-annie-muted leading-6">{capability.description}</p>
             </div>
@@ -142,7 +148,10 @@ const Home = () => {
       {/* Use Cases */}
       <Section>
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-semibold text-white md:text-4xl">使用场景</h2>
+          <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
+            Scenarios
+          </span>
+          <h2 className="mb-4 mt-4 text-3xl font-semibold text-white md:text-4xl">使用场景</h2>
           <p className="mx-auto max-w-2xl text-annie-muted">
             适配不同角色与需求的灵活应用方式
           </p>
@@ -152,7 +161,7 @@ const Home = () => {
           {scenarios.map((scenario, index) => (
             <div
               key={index}
-              className="rounded-2xl border border-white/10 bg-white/5 p-8 transition-all hover:border-annie-purple/50 hover:bg-white/10"
+              className="rounded-[2rem] border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-8 shadow-glow transition duration-300 hover:-translate-y-1"
             >
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-annie-purple/20">
                 <span className="text-2xl text-annie-purple">
