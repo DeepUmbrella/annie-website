@@ -58,7 +58,7 @@ const Blog = () => {
               renderItem={item => (
                 <List.Item>
                   <GlassCard className="w-full h-full p-6 hover:border-white/20 transition-colors">
-                    <h3 className="mb-3 text-2xl font-semibold tracking-[-0.02em] text-white line-clamp-2">{item.title}</h3>
+                    <h3 className="mb-3 text-[1.5rem] font-semibold tracking-[-0.02em] text-white line-clamp-2">{item.title}</h3>
                     <Paragraph 
                       className="mb-4 mt-3 text-sm leading-7 text-white/70"
                       ellipsis={{ rows: 3 }}
@@ -87,7 +87,7 @@ const Blog = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="mb-4 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">订阅更新</h2>
+          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">订阅更新</h2>
           <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
             获取最新的产品更新和 AI 行业洞察，第一时间了解 Annie 的新功能。
           </p>
