@@ -11,9 +11,9 @@ const baseClass =
 
 const variantClass = {
   primary:
-    'bg-gradient-to-r from-annie-purple to-annie-lavender text-white shadow-glow hover:-translate-y-0.5',
+    'bg-gradient-to-r from-annie-purple via-violet-500 to-annie-lavender text-white shadow-glow-lg hover:-translate-y-0.5 hover:brightness-110',
   secondary:
-    'border border-white/15 bg-white/5 text-white hover:border-white/30 hover:bg-white/10',
+    'border border-white/15 bg-white/8 text-white backdrop-blur-md hover:border-white/30 hover:bg-white/12',
 };
 
 const ButtonLink = ({ to, children, variant = 'primary' }: ButtonLinkProps) => (
