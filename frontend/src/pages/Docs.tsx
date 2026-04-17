@@ -80,30 +80,29 @@ const Docs = () => {
 
       <Section>
         <div className="mx-auto max-w-6xl">
-          <GlassCard className="p-6 md:p-8 mb-12">
+          <GlassCard className="mb-12 p-6 md:p-8">
             <Input.Search
               placeholder="搜索文档..."
               allowClear
               enterButton
               size="large"
               className="search-input"
-              onChange={e => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </GlassCard>
 
           {searchQuery && searchResults.length > 0 ? (
             <div>
-              <h2 className="mb-6 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">搜索结果</h2>
+              <h2 className="mb-6 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">
+                搜索结果
+              </h2>
               <List
                 dataSource={searchResults}
-                renderItem={item => (
+                renderItem={(item) => (
                   <List.Item className="mb-4">
-                    <GlassCard className="w-full p-6 hover:border-white/20 transition-colors">
+                    <GlassCard className="w-full p-6 transition-colors hover:border-white/20">
                       <h3 className="mb-2 text-[1.25rem] font-semibold text-white">{item.title}</h3>
-                      <Paragraph 
-                        className="text-sm leading-7 text-white/72"
-                        ellipsis={{ rows: 2 }}
-                      >
+                      <Paragraph className="text-sm leading-7 text-white/72" ellipsis={{ rows: 2 }}>
                         {item.excerpt}
                       </Paragraph>
                     </GlassCard>
@@ -115,28 +114,25 @@ const Docs = () => {
             <GlassCard className="p-12 text-center">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
-                description={
-                  <span className="text-white/72">未找到匹配的文档</span>
-                }
+                description={<span className="text-white/72">未找到匹配的文档</span>}
               />
             </GlassCard>
           ) : (
             <>
-              <h2 className="mb-6 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">文档目录</h2>
+              <h2 className="mb-6 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">
+                文档目录
+              </h2>
               <List
                 grid={{ gutter: 20, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
                 dataSource={docSections}
-                renderItem={item => (
+                renderItem={(item) => (
                   <List.Item>
-                    <GlassCard className="w-full h-full p-6 hover:border-white/20 transition-colors cursor-pointer">
+                    <GlassCard className="h-full w-full cursor-pointer p-6 transition-colors hover:border-white/20">
                       <div className="flex items-start gap-4">
                         <span className="text-3xl">{item.icon}</span>
                         <div className="flex-1">
                           <h3 className="mb-2 text-[1.25rem] font-semibold text-white">{item.title}</h3>
-                          <Paragraph 
-                            className="text-sm leading-7 text-white/72"
-                            ellipsis={{ rows: 2 }}
-                          >
+                          <Paragraph className="text-sm leading-7 text-white/72" ellipsis={{ rows: 2 }}>
                             {item.description}
                           </Paragraph>
                         </div>
@@ -151,8 +147,10 @@ const Docs = () => {
       </Section>
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
-        <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">需要更多帮助？</h2>
+        <GlassCard className="mx-auto max-w-4xl p-8 text-center md:p-12">
+          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">
+            需要更多帮助？
+          </h2>
           <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
             查看我们的 API 参考和示例代码，或者加入开发者社区获取支持。
           </p>
