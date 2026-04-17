@@ -36,7 +36,7 @@ const Contact = () => {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <GlassCard className="p-8">
-              <h3 className="mb-4 text-xl font-semibold text-white">联系方式</h3>
+              <h3 className="mb-4 text-[1.25rem] font-semibold text-white">联系方式</h3>
               <List
                 size="small"
                 split={false}
@@ -46,7 +46,7 @@ const Contact = () => {
                   { icon: '💬', label: '社区', value: 'https://community.annie.ai' },
                 ]}
                 renderItem={item => (
-                  <List.Item className="mb-4">
+                  <List.Item className="[&>div]:mb-4">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">{item.icon}</span>
                       <div>
@@ -61,7 +61,7 @@ const Contact = () => {
 
             <div className="md:col-span-2 lg:col-span-2">
               <GlassCard className="p-8 h-full">
-                <h3 className="mb-6 text-xl font-semibold text-white">提交反馈</h3>
+                <h3 className="mb-6 text-[1.25rem] font-semibold text-white">提交反馈</h3>
                 <Form
                   form={form}
                   onFinish={handleSubmit}
@@ -138,7 +138,7 @@ const Contact = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="mb-4 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">需要更多帮助？</h2>
+          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">需要更多帮助？</h2>
           <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
             查看我们的文档和常见问题，或者加入社区获取更多支持。
           </p>
