@@ -14,7 +14,7 @@ const Blog = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const API = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
         const response = await axios.get(`${API}/api/v1/blog/posts`);
         setPosts(response.data);
       } catch (error) {
