@@ -31,6 +31,8 @@ const Home = () => {
       {/* Hero Section */}
       <Section className="relative overflow-hidden pt-14 md:pt-24">
         <div className="absolute inset-x-0 top-0 -z-10 h-[420px] bg-annie-hero blur-3xl" />
+        <div className="absolute right-0 top-8 -z-10 h-[420px] w-[420px] rounded-full bg-annie-purple/20 blur-[120px]" />
+        <div className="absolute right-24 top-32 -z-10 h-[220px] w-[220px] rounded-full bg-annie-cyan/12 blur-[100px]" />
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-8">
             <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
