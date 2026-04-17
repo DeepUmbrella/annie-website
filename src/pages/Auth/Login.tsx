@@ -1,13 +1,12 @@
-import { Typography, Card, Form, Input, Button, message } from 'antd';
+import { Card, Form, Input, Button, message } from 'antd';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { loginAsync } from '../slices/authSlice';
-
-const { Title } = Typography;
+import type { AppDispatch } from '../../store';
+import { loginAsync } from '../../slices/authSlice';
 
 const Login = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [form] = Form.useForm();
 
   const handleSubmit = async (values: any) => {
