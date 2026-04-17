@@ -19,7 +19,40 @@ function App() {
     <Provider store={store}>
       <ConfigProvider locale={zhCN} theme={{
         token: {
-          colorPrimary: '#522b5b',
+          colorPrimary: '#7C3AED',
+          colorText: '#F8FAFC',
+          colorTextSecondary: '#94A3B8',
+          colorTextTertiary: '#64748B',
+          colorTextQuaternary: '#475569',
+          colorBgContainer: 'transparent',
+          colorBgElevated: 'rgba(255, 255, 255, 0.06)',
+          colorBorder: 'rgba(255, 255, 255, 0.10)',
+          borderRadius: 12,
+        },
+        components: {
+          Input: {
+            colorBgContainer: 'rgba(255, 255, 255, 0.03)',
+            colorBorder: 'rgba(255, 255, 255, 0.10)',
+            colorText: '#F8FAFC',
+            colorTextPlaceholder: 'rgba(255, 255, 255, 0.40)',
+          },
+          Button: {
+            colorText: '#F8FAFC',
+            borderRadius: 12,
+          },
+          List: {
+            colorText: '#F8FAFC',
+            colorTextDescription: '#94A3B8',
+          },
+          Empty: {
+            colorText: '#94A3B8',
+          },
+          Spin: {
+            colorText: '#F8FAFC',
+          },
+          Tag: {
+            colorText: '#F8FAFC',
+          },
         },
       }}>
         <Router>
