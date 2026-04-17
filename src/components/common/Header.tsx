@@ -21,7 +21,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-4 md:px-6">
-      <div className="mx-auto flex max-w-8xl items-center justify-between rounded-full border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-8xl items-center justify-between rounded-full border border-white/10 bg-white/[0.04] px-5 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.24)] backdrop-blur-2xl">
         <Link to="/" className="text-lg font-semibold tracking-tight text-white">
           Annie AI
         </Link>
@@ -31,7 +31,7 @@ const Header = () => {
             <Link
               key={item.key}
               to={item.to}
-              className="text-sm text-annie-muted transition hover:text-white"
+              className="text-sm text-white/65 transition duration-200 hover:text-white"
             >
               {item.label}
             </Link>
@@ -43,13 +43,13 @@ const Header = () => {
             <>
               <button
                 onClick={() => navigate('/profile')}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
               >
                 {user.username}
               </button>
               <button
                 onClick={handleLogout}
-                className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white transition hover:bg-white/10"
+                className="rounded-full border border-white/10 bg-white/8 px-4 py-2 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
               >
                 退出
               </button>
@@ -58,13 +58,13 @@ const Header = () => {
             <>
               <button
                 onClick={() => navigate('/login')}
-                className="text-sm text-white transition hover:text-annie-lavender"
+                className="rounded-full border border-white/10 bg-white/8 px-5 py-2.5 text-sm text-white backdrop-blur-md transition hover:bg-white/12"
               >
                 登录
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="rounded-full bg-gradient-to-r from-annie-purple to-annie-lavender px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:-translate-y-0.5"
+                className="rounded-full bg-gradient-to-r from-annie-purple to-annie-lavender px-5 py-2.5 text-sm font-semibold text-white shadow-glow-lg transition-all hover:-translate-y-0.5 hover:brightness-110"
               >
                 注册
               </button>
