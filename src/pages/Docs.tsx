@@ -93,15 +93,15 @@ const Docs = () => {
 
           {searchQuery && searchResults.length > 0 ? (
             <div>
-              <h2 className="text-2xl font-semibold text-white mb-6">搜索结果</h2>
+              <h2 className="mb-6 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">搜索结果</h2>
               <List
                 dataSource={searchResults}
                 renderItem={item => (
                   <List.Item className="mb-4">
                     <GlassCard className="w-full p-6 hover:border-white/20 transition-colors">
-                      <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                      <h3 className="mb-2 text-xl font-semibold text-white">{item.title}</h3>
                       <Paragraph 
-                        className="text-white/65 text-sm"
+                        className="text-sm leading-7 text-white/72"
                         ellipsis={{ rows: 2 }}
                       >
                         {item.excerpt}
@@ -116,13 +116,13 @@ const Docs = () => {
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
                 description={
-                  <span className="text-white/65">未找到匹配的文档</span>
+                  <span className="text-white/72">未找到匹配的文档</span>
                 }
               />
             </GlassCard>
           ) : (
             <>
-              <h2 className="text-2xl font-semibold text-white mb-6">文档目录</h2>
+              <h2 className="mb-6 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">文档目录</h2>
               <List
                 grid={{ gutter: 20, xs: 1, sm: 1, md: 2, lg: 2, xl: 3, xxl: 3 }}
                 dataSource={docSections}
@@ -132,9 +132,9 @@ const Docs = () => {
                       <div className="flex items-start gap-4">
                         <span className="text-3xl">{item.icon}</span>
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                          <h3 className="mb-2 text-xl font-semibold text-white">{item.title}</h3>
                           <Paragraph 
-                            className="text-white/65 text-sm"
+                            className="text-sm leading-7 text-white/72"
                             ellipsis={{ rows: 2 }}
                           >
                             {item.description}
@@ -152,8 +152,8 @@ const Docs = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="text-2xl font-semibold text-white mb-4">需要更多帮助？</h2>
-          <p className="text-base text-white/65 mb-8">
+          <h2 className="mb-4 text-3xl font-semibold tracking-[-0.02em] text-white md:text-4xl">需要更多帮助？</h2>
+          <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
             查看我们的 API 参考和示例代码，或者加入开发者社区获取支持。
           </p>
         </GlassCard>
