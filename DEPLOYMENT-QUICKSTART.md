@@ -1,74 +1,133 @@
-# Annie 网站部署环境变量配置指南
+# Annie 部署快速开始
 
-## 🚀 快速开始
+这份文档面向第一次部署项目的同事，目标是回答三个问题：
 
-### 自动配置（推荐）
+- 部署前要准备什么
+- 推荐按什么顺序执行
+- 出问题时先看哪里
 
-1. **运行环境变量配置脚本**
+如果你只想快速完成一次标准部署，优先走下面的“推荐路径”。
 
-   ```bash
-   # 在项目根目录运行
-   ./scripts/setup-env.sh
-   ```
+## 部署前提
 
-   这个脚本会自动：
-   - 生成SSH密钥对
-   - 生成安全的随机密码和密钥
-   - 创建所有必要的环境变量文件
-   - 配置 .gitignore 忽略敏感文件
+开始之前，请先准备好这些信息和资源：
 
-2. **编辑部署配置**
+- 一台可 SSH 登录的 Linux 服务器
+- 已解析到服务器的域名
+- SSL 证书和私钥文件
+- 本地可用的 `ssh`、`openssl`、`ssh-keygen`
 
-   ```bash
-   # 编辑生成的 deploy.env 文件
-   nano deploy.env  # 或使用你喜欢的编辑器
-   ```
+部署脚本分为两类：
 
-   修改以下配置：
+- `scripts/setup-server.sh`
+  作用：首次初始化服务器，安装 Docker、Nginx，配置镜像加速和 SSL
+- `scripts/deploy-app.sh`
+  作用：拉取代码、上传环境变量、启动容器、执行 Prisma 迁移、做健康检查
 
-   ```bash
-   SSH_HOST=你的服务器IP或域名
-   SSH_USER=ubuntu  # 或你的服务器用户名
-   DOMAIN=你的域名.com
-   ALIYUN_MIRROR=https://你的阿里云镜像加速地址
-   SSL_CERT_PATH=/path/to/your/certificate.pem
-   SSL_KEY_PATH=/path/to/your/private.key
-   ```
+## 推荐路径
 
-3. **上传SSH公钥到服务器**
+### 1. 自动生成部署文件
 
-   ```bash
-   # 将生成的公钥上传到服务器
-   ssh-copy-id -i ~/.ssh/annie-deploy.pub user@your-server-ip
+在项目根目录运行：
 
-   # 或者手动添加
-   cat ~/.ssh/annie-deploy.pub | ssh user@your-server-ip "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
-   ```
+```bash
+./scripts/setup-env.sh
+```
 
-4. **运行部署**
+这个脚本会自动完成这些事情：
 
-   ```bash
-   # 服务器初始化（只需运行一次）
-   env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+- 生成 `~/.ssh/annie-deploy` SSH 密钥对
+- 生成随机的数据库密码、JWT 密钥、MeiliSearch 密钥
+- 创建 `.env`、`backend/.env`、`deploy.env`、`secrets.env`
+- 把常见敏感文件加入 `.gitignore`
 
-   # 应用部署
-   env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
-   ```
+生成后请重点关注这几个文件：
 
-## 📋 手动配置步骤
+- `.env`
+  生产环境 Docker Compose 使用的根环境变量
+- `backend/.env`
+  后端进程使用的环境变量
+- `deploy.env`
+  部署脚本执行时依赖的变量
+- `secrets.env`
+  本地密钥备份，不要提交到 Git
 
-如果你不想使用自动脚本，也可以手动配置：
+### 2. 编辑 `deploy.env`
+
+至少需要把这些字段替换成真实值：
+
+```bash
+SSH_HOST=your-server-ip-or-domain
+SSH_USER=ubuntu
+SSH_KEY=~/.ssh/annie-deploy
+DOMAIN=your-domain.com
+ALIYUN_MIRROR=https://your-registry-mirror.com
+SSL_CERT_PATH=/path/to/fullchain.pem
+SSL_KEY_PATH=/path/to/privkey.pem
+```
+
+说明：
+
+- `SSH_HOST` 是服务器 IP 或域名
+- `SSH_USER` 是服务器登录用户
+- `SSH_KEY` 默认可以使用脚本生成的 `~/.ssh/annie-deploy`
+- `ALIYUN_MIRROR` 是 Docker 镜像加速地址，`setup-server.sh` 会强制要求这个值
+- `SSL_CERT_PATH` 和 `SSL_KEY_PATH` 是你本地机器上的证书文件路径，脚本会把它们上传到服务器
+
+### 3. 把 SSH 公钥加到服务器
+
+推荐方式：
+
+```bash
+ssh-copy-id -i ~/.ssh/annie-deploy.pub user@your-server-ip
+```
+
+或者手动追加到服务器的 `~/.ssh/authorized_keys`。
+
+### 4. 首次初始化服务器
+
+这一步只需要执行一次：
+
+```bash
+env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+```
+
+这一步会做的事情包括：
+
+- 安装 Git、Docker、Docker Compose、Nginx
+- 配置 Docker 镜像加速
+- 上传 SSL 证书
+- 生成并启用宿主机 Nginx 配置
+- 做基础安全加固
+
+### 5. 部署应用
+
+```bash
+env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
+```
+
+这一步会自动：
+
+- 从 GitHub 拉取或更新代码
+- 生成并上传服务器端 `.env` 和 `backend/.env`
+- 启动 Docker Compose 服务
+- 执行 `prisma generate` 和 `prisma migrate deploy`
+- 检查后端和前端健康状态
+
+部署成功后，默认访问地址是：
+
+- 站点首页：`https://your-domain.com`
+- API：`https://your-domain.com/api`
+
+## 手动路径
+
+如果你不想使用 `setup-env.sh` 自动生成文件，也可以手动准备密钥和配置。
 
 ### 1. 生成安全密钥
 
 ```bash
-# 生成JWT密钥 (32字节)
 JWT_SECRET=$(openssl rand -hex 32)
-
-# 生成数据库密码 (16字节)
 POSTGRES_PASSWORD=$(openssl rand -hex 16)
-
-# 生成MeiliSearch密钥 (32字节)
 MEILISEARCH_MASTER_KEY=$(openssl rand -hex 32)
 
 echo "JWT_SECRET=$JWT_SECRET"
@@ -76,9 +135,7 @@ echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD"
 echo "MEILISEARCH_MASTER_KEY=$MEILISEARCH_MASTER_KEY"
 ```
 
-### 2. 创建环境变量文件
-
-#### 主环境变量文件 (.env)
+### 2. 创建根目录 `.env`
 
 ```bash
 NODE_ENV=production
@@ -87,7 +144,7 @@ CORS_ORIGIN=https://your-domain.com
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=your-generated-password
 POSTGRES_DB=annie_db
-DATABASE_URL=postgresql://annie:your-password@postgres:5432/annie_db?schema=public
+DATABASE_URL=postgresql://annie:your-generated-password@postgres:5432/annie_db?schema=public
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=your-generated-key
@@ -98,12 +155,14 @@ ANNIE_API_URL=https://annie-api.your-domain.com
 ANNIE_API_KEY=your-annie-api-key
 ```
 
-#### 后端专用环境变量 (backend/.env)
+说明：根目录 `.env` 主要给 Docker Compose 使用，`BACKEND_PORT` 是宿主机暴露端口。
+
+### 3. 创建 `backend/.env`
 
 ```bash
 NODE_ENV=production
 PORT=3001
-DATABASE_URL=postgresql://annie:your-password@postgres:5432/annie_db?schema=public
+DATABASE_URL=postgresql://annie:your-generated-password@postgres:5432/annie_db?schema=public
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=your-generated-key
@@ -113,7 +172,9 @@ JWT_EXPIRES_IN=7d
 CORS_ORIGIN=https://your-domain.com
 ```
 
-#### 部署配置 (deploy.env)
+说明：`PORT` 才是 Nest.js 进程真正监听的端口。
+
+### 4. 创建 `deploy.env`
 
 ```bash
 SSH_HOST=your-server-ip
@@ -128,135 +189,89 @@ SSL_CERT_PATH=/etc/letsencrypt/live/your-domain.com/fullchain.pem
 SSL_KEY_PATH=/etc/letsencrypt/live/your-domain.com/privkey.pem
 ```
 
-### 3. 生成SSH密钥
+### 5. 生成 SSH 密钥
 
 ```bash
-# 生成Ed25519密钥对（推荐）
 ssh-keygen -t ed25519 -C "annie-deploy@your-email.com" -f ~/.ssh/annie-deploy -N ""
-
-# 设置权限
 chmod 600 ~/.ssh/annie-deploy
 chmod 644 ~/.ssh/annie-deploy.pub
 ```
 
-### 4. 配置SSL证书
-
-#### 使用Let's Encrypt（推荐）
+### 6. 执行部署
 
 ```bash
-# 在服务器上安装certbot
-sudo apt install certbot
-
-# 生成证书
-sudo certbot certonly --standalone -d your-domain.com -d www.your-domain.com
+env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 ```
 
-#### 使用自签名证书（仅开发环境）
+## 最小检查清单
+
+执行部署前，至少确认这些项：
+
+- [ ] `deploy.env` 里的 `SSH_HOST`、`SSH_USER`、`DOMAIN` 已改成真实值
+- [ ] `POSTGRES_PASSWORD`、`JWT_SECRET`、`MEILISEARCH_MASTER_KEY` 不是占位值
+- [ ] SSH 公钥已经加入服务器
+- [ ] 本地证书文件路径真实存在
+- [ ] 域名已经解析到服务器
+
+## 常见问题
+
+### SSH 无法连接
+
+先测试：
 
 ```bash
-# 生成自签名证书
-openssl req -x509 -newkey rsa:4096 -keyout private.key -out certificate.pem -days 365 -nodes -subj "/CN=your-domain.com"
-```
-
-## 🔐 安全注意事项
-
-1. **不要提交敏感文件到Git**
-   - `.env`
-   - `backend/.env`
-   - `deploy.env`
-   - `secrets.env`
-   - `*.key`
-   - `*.pem`
-
-2. **定期轮换密钥**
-   - JWT密钥：建议每3个月轮换
-   - 数据库密码：建议每6个月轮换
-   - MeiliSearch密钥：根据安全需求轮换
-
-3. **文件权限**
-
-   ```bash
-   # 环境变量文件
-   chmod 600 .env backend/.env deploy.env
-
-   # SSH私钥
-   chmod 600 ~/.ssh/annie-deploy
-
-   # SSL证书
-   chmod 644 /etc/nginx/ssl/*.crt
-   chmod 600 /etc/nginx/ssl/*.key
-   ```
-
-## 📁 生成的文件结构
-
-运行自动配置脚本后，你会得到：
-
-```
-annie-website/
-├── .env                    # 主环境变量
-├── backend/
-│   └── .env               # 后端专用环境变量
-├── deploy.env             # 部署配置
-├── secrets.env            # 密钥备份（不要提交）
-├── scripts/
-│   └── setup-env.sh       # 环境配置脚本
-└── ~/.ssh/
-    ├── annie-deploy       # SSH私钥
-    └── annie-deploy.pub   # SSH公钥
-```
-
-## 🚨 故障排除
-
-### SSH连接问题
-
-```bash
-# 测试SSH连接
 ssh -i ~/.ssh/annie-deploy user@your-server-ip
-
-# 如果连接失败，检查：
-# 1. 公钥是否正确添加到服务器
-# 2. 服务器防火墙是否开放22端口
-# 3. SSH服务是否运行
 ```
 
-### SSL证书问题
+重点检查：
+
+- 公钥是否已加入服务器
+- 防火墙是否开放 22 端口
+- SSH 服务是否正常运行
+
+### SSL 证书路径不对
+
+先检查证书文件是否存在：
 
 ```bash
-# 检查证书文件是否存在
-ls -la /etc/letsencrypt/live/your-domain.com/
-
-# 测试nginx配置
-sudo nginx -t
-
-# 重新加载nginx
-sudo systemctl reload nginx
+ls -la /path/to/fullchain.pem /path/to/privkey.pem
 ```
 
-### Docker镜像问题
+如果你使用的是 Let's Encrypt，常见路径通常是：
 
 ```bash
-# 检查镜像加速配置
+/etc/letsencrypt/live/your-domain.com/fullchain.pem
+/etc/letsencrypt/live/your-domain.com/privkey.pem
+```
+
+### Docker 镜像拉取慢或失败
+
+先确认镜像加速是否已生效：
+
+```bash
 docker info --format '{{json .RegistryConfig.Mirrors}}'
-
-# 如果没有配置，重新运行setup-server.sh
 ```
 
-## 📞 获取帮助
+如果为空，重新执行：
 
-如果遇到问题，请：
+```bash
+env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+```
 
-1. 检查 `docs/environment-variables-setup.md` 详细文档
-2. 查看 `docs/deployment-optimizations.md` 部署优化指南
-3. 检查服务器日志：`ssh user@server "docker compose logs"`
+### 部署后服务没有起来
 
-## ✅ 部署检查清单
+优先查看这些输出：
 
-- [ ] SSH密钥已生成并配置到服务器
-- [ ] SSL证书已准备就绪
-- [ ] 所有密码和密钥已生成（不要使用默认值）
-- [ ] 域名DNS已正确配置
-- [ ] 服务器防火墙已开放必要端口（22, 80, 443）
-- [ ] Docker镜像加速已配置
-- [ ] 环境变量文件已创建并配置
+```bash
+ssh user@server "cd /root/annie-website && docker compose ps"
+ssh user@server "cd /root/annie-website && docker compose logs --tail=100 backend"
+ssh user@server "cd /root/annie-website && docker compose logs --tail=100 frontend"
+```
 
-完成这些步骤后，你的 Annie 网站就可以成功部署了！🎉
+## 相关文档
+
+- [README.md](/Users/yanlin/projects/annie-website/README.md)
+- [docs/deployment.md](/Users/yanlin/projects/annie-website/docs/deployment.md)
+- [docs/environment-variables-setup.md](/Users/yanlin/projects/annie-website/docs/environment-variables-setup.md)
+- [docs/deployment-optimizations.md](/Users/yanlin/projects/annie-website/docs/deployment-optimizations.md)

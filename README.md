@@ -1,11 +1,11 @@
 # Annie Website
 
-Annie AI 助手介绍网站 - 前后端分离架构
+Annie AI 助手介绍网站，采用前后端分离架构。
 
 ## 技术栈
 
 ### 前端
-- **框架:** React 18
+- **框架:** React 19
 - **构建工具:** Vite
 - **UI 库:** Ant Design
 - **状态管理:** Redux Toolkit
@@ -23,9 +23,9 @@ Annie AI 助手介绍网站 - 前后端分离架构
 
 ### 部署
 - **容器编排:** Docker Compose
-- **反向代理:** 宿主机 Nginx（HTTPS / 域名入口）
-- **前端静态服务:** frontend 容器内 Nginx（仅托管静态文件）
-- **部署方式:** GitHub 拉取 + setup/deploy 两步脚本
+- **反向代理:** 宿主机 Nginx 负责 HTTPS / 域名入口
+- **前端静态服务:** frontend 容器内 Nginx 负责托管构建产物
+- **部署方式:** GitHub 拉取 + `setup-server.sh` / `deploy-app.sh`
 
 ## 快速开始
 
@@ -36,45 +36,139 @@ git clone <repository-url>
 cd annie-website
 ```
 
-### 2. 配置环境变量与其他
+### 2. 选择一种启动方式
+
+#### Docker 开发
+
+适合第一次上手、希望一键拉起完整依赖的场景。
 
 ```bash
-# 复制环境变量示例文件
 cp .env.example .env
-
-# 编辑 .env 文件，配置必要的环境变量
-# - POSTGRES_PASSWORD: 数据库密码
-# - MEILISEARCH_MASTER_KEY: MeiliSearch 主密钥
-# - JWT_SECRET: JWT 签名密钥
-```
-
-### 3. 启动服务
-
-```bash
-# 使用 Docker Compose 启动所有服务
 docker compose up -d
-
-# 查看服务日志
-docker compose logs -f
-
-# 停止服务
-docker compose down
 ```
 
-### 4. 访问应用
+启动后默认访问：
 
 - 前端: http://localhost:3000
 - 后端 API: http://localhost:3001
 - MeiliSearch: http://localhost:7700
 
-## 手动动启动（不使用 Docker）
+常用命令：
+
+```bash
+docker compose logs -f
+docker compose down
+```
+
+#### 本地开发
+
+适合单独调试前后端代码。此模式下数据库、Redis、MeiliSearch 应运行在本机，连接地址使用 `localhost`。
+
+```bash
+cp .env.local.example .env.local
+```
+
+后端：
+
+```bash
+cd backend
+npm install
+npm run start:dev
+```
+
+前端：
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+说明：
+
+- 后端会优先读取 `backend/.env.local`、`backend/.env`，其次读取根目录 `.env.local`、`.env`。
+- 推荐把本地开发配置维护在项目根目录 `.env.local`。
+- 前端开发服务器默认运行在 http://localhost:5173。
+
+## 三种常见工作方式
+
+### Docker 开发
+
+使用根目录 `.env` 或 `.env.docker`，容器之间通过服务名通信：
+
+- `DATABASE_URL` 使用 `postgres`
+- `REDIS_URL` 使用 `redis`
+- `MEILISEARCH_URL` 使用 `meilisearch`
+
+推荐做法：
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+如果你想显式区分 Docker 环境文件：
+
+```bash
+cp .env.docker.example .env.docker
+docker compose --env-file .env.docker up -d
+```
+
+### 本地开发
+
+使用 `.env.local`，本机服务通过 `localhost` 连接：
+
+- `DATABASE_URL` 使用 `localhost:5432`
+- `REDIS_URL` 使用 `localhost:6379`
+- `MEILISEARCH_URL` 使用 `localhost:7700`
+- 后端监听端口使用 `PORT`
+
+推荐做法：
+
+```bash
+cp .env.local.example .env.local
+```
+
+### 部署
+
+生产环境使用部署脚本和 `deploy.env`，不要直接复用本地开发环境文件。
+
+首次部署通常分两步：
+
+```bash
+env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
+```
+
+更完整的部署说明见：
+
+- [DEPLOYMENT-QUICKSTART.md](/Users/yanlin/projects/annie-website/DEPLOYMENT-QUICKSTART.md)
+- [docs/deployment.md](/Users/yanlin/projects/annie-website/docs/deployment.md)
+
+## 环境变量
+
+常用文件如下：
+
+- `.env.example`: Docker Compose 默认示例
+- `.env.docker.example`: Docker Compose 专用示例
+- `.env.local.example`: 本地直跑专用示例
+- `deploy.env`: 生产部署脚本使用的环境变量文件
+
+详细说明见 [docs/environment-variables-setup.md](/Users/yanlin/projects/annie-website/docs/environment-variables-setup.md)。
+
+## 常用命令
 
 ### 后端
 
 ```bash
 cd backend
 npm install
-npm run dev
+npm run start:dev
+npm run build
+npm run start
+npm run start:prod
+npm run test
+npm run test:e2e
 ```
 
 ### 前端
@@ -83,42 +177,33 @@ npm run dev
 cd frontend
 npm install
 npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
 ## 项目结构
 
-```
+```text
 annie-website/
-├── frontend/          # React 前端应用
+├── frontend/               # React 前端应用
 │   ├── src/
-│   │   ├── pages/           # 页面组件
-│   │   ├── components/      # 可复用组件
-│   │   ├── store/           # Redux store
-│   │   ├── api/             # API 请求封装
-│   │   └── hooks/           # 自定义 Hooks
+│   │   ├── pages/          # 页面组件
+│   │   ├── components/     # 可复用组件
+│   │   ├── slices/         # Redux slices
+│   │   └── assets/         # 静态资源
 │   └── package.json
-├── backend (Nest.js 后端 API)
+├── backend/                # Nest.js 后端 API
 │   ├── src/
-│   │   ├── modules/          # 业务模块
-│   │   │   ├── auth/         # 认证模块
-│   │   │   ├── chat/         # 对话模块
-│   │   │   ├── blog/         # 博客模块
-│   │   │   ├── docs/         # 文档模块
-│   │   │   └── feedback/     # 反馈模块
-│   │   ├── common/           # 公共模块
-│   │   │   ├── guards/       # 守卫
-│   │   │   ├── decorators/   # 装饰器
-│   │   │   ├── filters/      # 异常过滤器
-│   │   │   ├── interceptors/ # 拦截器
-│   │   │   └── pipes/        # 管道
-│   │   ├── config/           # 配置
-│   │   ├── database/         # 数据库
-│   │   └── main.ts           # 入口文件
-│   ├── prisma/               # Prisma 配置
+│   │   ├── modules/        # 业务模块
+│   │   ├── common/         # 公共模块
+│   │   ├── config/         # 配置
+│   │   └── main.ts         # 入口文件
+│   ├── prisma/             # Prisma 配置
 │   └── package.json
-├── docs/              # 项目文档
-├── docker-compose.yml # Docker 服务配置
-└── README.md          # 项目说明
+├── docs/                   # 项目文档
+├── docker-compose.yml      # Docker 服务配置
+└── README.md               # 项目说明
 ```
 
 ## Docker 服务
@@ -127,68 +212,7 @@ annie-website/
 - **redis:** Redis 7 缓存服务
 - **meilisearch:** MeiliSearch v1.3 搜索引擎
 - **backend:** Nest.js 后端服务
-- **frontend:** React 前端静态站点容器（容器内 Nginx 仅服务 `dist/` 文件）
-
-## 开发命令
-
-### 后端
-
-```bash
-cd backend
-npm install
-npm run dev       # 开发模式
-npm run build     # 构建
-npm run start     # 生产环境
-npm run test      # 测试
-npm run test:e2e  # 端到端测试
-```
-
-### 前端
-
-```bash
-cd frontend
-npm install
-npm run dev       # 开发模式
-npm run build     # 构建
-npm run preview   # 预览构建结果
-npm run lint      # 代码检查
-```
-
-## 环境变量
-
-参见 `.env.example` 文件了解所有可配置的环境变量。
-
-## 部署
-
-### 服务器首次环境设置
-
-```bash
-export SSH_HOST=<server-ip>
-export SSH_USER=<ssh-user>
-export SSH_KEY=<path-to-ssh-key>
-export DOMAIN=<your-domain>
-export ALIYUN_MIRROR=<docker-mirror-url>
-export SSL_CERT_PATH=<path-to-ssl-cert.pem>
-export SSL_KEY_PATH=<path-to-ssl-key.pem>
-
-bash scripts/setup-server.sh
-```
-
-### 应用部署（从 GitHub 拉取代码）
-
-```bash
-export SSH_HOST=<server-ip>
-export SSH_USER=<ssh-user>
-export SSH_KEY=<path-to-ssh-key>
-export DOMAIN=<your-domain>
-export POSTGRES_PASSWORD=<strong-password>
-export JWT_SECRET=<strong-secret>
-export MEILISEARCH_MASTER_KEY=<strong-key>
-
-bash scripts/deploy-app.sh
-```
-
-详细说明参见 `docs/deployment.md`。其中宿主机 Nginx 和 frontend 容器内 Nginx 的职责是分开的，前者负责 HTTPS 和反向代理，后者只负责前端静态文件托管。
+- **frontend:** 前端静态站点容器
 
 ## 许可证
 
