@@ -25,7 +25,7 @@ Annie AI 助手介绍网站，采用前后端分离架构。
 - **容器编排:** Docker Compose
 - **反向代理:** 宿主机 Nginx 负责 HTTPS / 域名入口
 - **前端静态服务:** frontend 容器内 Nginx 负责托管构建产物
-- **部署方式:** GitHub 拉取 + `setup-server.sh` / `deploy-app.sh`
+- **部署方式:** `setup-server.sh` + `setup-nginx.sh` + `deploy-app.sh`
 
 ## 快速开始
 
@@ -130,13 +130,13 @@ cp .env.local.example .env.local
 ```
 
 ### 部署
-
 生产环境使用部署脚本和 `deploy.env`，不要直接复用本地开发环境文件。
 
-首次部署通常分两步：
+首次部署通常分三步：
 
 ```bash
 env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+env $(cat deploy.env | xargs) ./scripts/setup-nginx.sh
 env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 ```
 
@@ -144,6 +144,26 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 
 - [DEPLOYMENT-QUICKSTART.md](/Users/yanlin/projects/annie-website/DEPLOYMENT-QUICKSTART.md)
 - [docs/deployment.md](/Users/yanlin/projects/annie-website/docs/deployment.md)
+
+### GitHub Actions 自动部署
+
+仓库已经包含 [`.github/workflows/deploy.yml`](/Users/yanlin/projects/annie-website/.github/workflows/deploy.yml)，当代码推送到 `main` 分支时会自动触发部署，也支持手动 `workflow_dispatch`。
+
+在 GitHub 仓库的 `Settings > Secrets and variables > Actions` 中至少配置这些 Secrets：
+
+- `SSH_HOST`
+- `SSH_USER`
+- `SSH_PRIVATE_KEY`
+- `DOMAIN`
+- `POSTGRES_PASSWORD`
+- `JWT_SECRET`
+- `MEILISEARCH_MASTER_KEY`
+
+说明：
+
+- 这套自动部署默认调用 `scripts/deploy-app.sh`
+- 服务器首次初始化仍然需要你手动运行一次 `scripts/setup-server.sh` 和 `scripts/setup-nginx.sh`
+- 如果仓库是私有仓库，服务器端还需要能访问 GitHub 仓库，否则 `git clone` / `git pull` 会失败
 
 ## 环境变量
 

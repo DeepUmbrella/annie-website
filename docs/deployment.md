@@ -38,24 +38,23 @@
 
 ## 部署步骤
 
-### 1. 服务器准备
+### 1. 服务器基础环境准备
 
 ```bash
-# 更新系统
-sudo apt update && sudo apt upgrade -y
-
-# 安装 Docker
-#（根据你的发行版选择合适的安装方式）
-
-# 安装 Docker Compose
-#（使用官方二进制或系统包管理器）
-
-# 验证安装
-docker --version
-docker compose --version
+env $(cat deploy.env | xargs) ./scripts/setup-server.sh
 ```
 
-### 2. 获取代码
+这一步负责安装 Git、Docker、Docker Compose，配置 Docker 镜像加速并做基础安全加固。
+
+### 2. 配置 Nginx 和 SSL
+
+```bash
+env $(cat deploy.env | xargs) ./scripts/setup-nginx.sh
+```
+
+这一步负责安装 Nginx、上传证书并生成宿主机反向代理配置。
+
+### 3. 获取代码
 
 如果使用 GitHub 仓库部署：
 
@@ -64,7 +63,7 @@ git clone <repository-url>
 cd <project-directory>
 ```
 
-### 3. 配置环境变量
+### 4. 配置环境变量
 
 创建并编辑环境变量文件，至少包含：
 
@@ -88,7 +87,7 @@ ANNIE_API_KEY=<annie-api-key>
 
 > 建议将这些变量放入 `.env` 和 `backend/.env`，并确保不要提交到版本控制。
 
-### 4. 配置 SSL 证书
+### 5. 配置 SSL 证书
 
 将证书放到服务器上的安全目录，例如：
 
@@ -101,7 +100,7 @@ ANNIE_API_KEY=<annie-api-key>
 - `your-domain.crt`
 - `your-domain.key`
 
-### 5. 配置宿主机 Nginx
+### 6. 配置宿主机 Nginx
 
 宿主机 Nginx 是公网入口，负责 SSL 终止和反向代理，例如：
 
@@ -144,7 +143,7 @@ server {
 }
 ```
 
-### 6. 启动服务
+### 7. 启动服务
 
 ```bash
 docker compose up -d --build
@@ -152,7 +151,7 @@ docker compose ps
 docker compose logs -f
 ```
 
-### 7. 初始化数据库
+### 8. 初始化数据库
 
 如果你是通过 `scripts/deploy-app.sh` 部署，这一步脚本已经自动执行。
 
@@ -162,7 +161,7 @@ docker compose logs -f
 docker compose exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
 ```
 
-### 8. 设置自动续期 SSL
+### 9. 设置自动续期 SSL
 
 使用你的证书供应商或 Certbot 的自动续期机制，定期更新证书并重载 Nginx。
 

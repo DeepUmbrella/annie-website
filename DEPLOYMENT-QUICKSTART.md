@@ -20,7 +20,9 @@
 部署脚本分为两类：
 
 - `scripts/setup-server.sh`
-  作用：首次初始化服务器，安装 Docker、Nginx，配置镜像加速和 SSL
+-  作用：首次初始化服务器基础环境，安装 Git / Docker / Docker Compose，配置镜像加速并进行基础安全加固
+- `scripts/setup-nginx.sh`
+  作用：安装 Nginx、上传 SSL 证书并生成站点配置
 - `scripts/deploy-app.sh`
   作用：拉取代码、上传环境变量、启动容器、执行 Prisma 迁移、做健康检查
 
@@ -61,7 +63,7 @@ SSH_HOST=your-server-ip-or-domain
 SSH_USER=ubuntu
 SSH_KEY=~/.ssh/annie-deploy
 DOMAIN=your-domain.com
-ALIYUN_MIRROR=https://your-registry-mirror.com
+DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/path/to/fullchain.pem
 SSL_KEY_PATH=/path/to/privkey.pem
 ```
@@ -69,9 +71,9 @@ SSL_KEY_PATH=/path/to/privkey.pem
 说明：
 
 - `SSH_HOST` 是服务器 IP 或域名
-- `SSH_USER` 是服务器登录用户
+- `SSH_USER` 是服务器登录用户，推荐使用具备 `sudo` 权限的非 `root` 用户
 - `SSH_KEY` 默认可以使用脚本生成的 `~/.ssh/annie-deploy`
-- `ALIYUN_MIRROR` 是 Docker 镜像加速地址，`setup-server.sh` 会强制要求这个值
+- `DOCKER_REGISTRY_MIRROR` 是 Docker 镜像加速地址，`setup-server.sh` 会强制要求这个值
 - `SSL_CERT_PATH` 和 `SSL_KEY_PATH` 是你本地机器上的证书文件路径，脚本会把它们上传到服务器
 
 ### 3. 把 SSH 公钥加到服务器
@@ -84,7 +86,7 @@ ssh-copy-id -i ~/.ssh/annie-deploy.pub user@your-server-ip
 
 或者手动追加到服务器的 `~/.ssh/authorized_keys`。
 
-### 4. 首次初始化服务器
+### 4. 首次初始化服务器基础环境
 
 这一步只需要执行一次：
 
@@ -94,13 +96,25 @@ env $(cat deploy.env | xargs) ./scripts/setup-server.sh
 
 这一步会做的事情包括：
 
-- 安装 Git、Docker、Docker Compose、Nginx
+- 安装 Git、Docker、Docker Compose
 - 配置 Docker 镜像加速
-- 上传 SSL 证书
-- 生成并启用宿主机 Nginx 配置
 - 做基础安全加固
 
-### 5. 部署应用
+### 5. 配置 Nginx 和 SSL
+
+这一步通常也是首次部署时执行一次：
+
+```bash
+env $(cat deploy.env | xargs) ./scripts/setup-nginx.sh
+```
+
+这一步会做的事情包括：
+
+- 安装并启动 Nginx
+- 上传 SSL 证书
+- 生成并启用宿主机 Nginx 配置
+
+### 6. 部署应用
 
 ```bash
 env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
@@ -118,6 +132,48 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 
 - 站点首页：`https://your-domain.com`
 - API：`https://your-domain.com/api`
+
+## GitHub Actions 自动部署
+
+如果你希望在代码推送到 `main` 分支后自动部署，项目里已经提供了工作流文件：
+
+- [`.github/workflows/deploy.yml`](/Users/yanlin/projects/annie-website/.github/workflows/deploy.yml)
+
+这个工作流会在以下场景触发：
+
+- push 到 `main`
+- 手动点击 `Run workflow`
+
+### 需要配置的 GitHub Secrets
+
+在仓库的 `Settings > Secrets and variables > Actions` 中添加：
+
+```bash
+SSH_HOST
+SSH_USER
+SSH_PRIVATE_KEY
+DOMAIN
+POSTGRES_PASSWORD
+JWT_SECRET
+MEILISEARCH_MASTER_KEY
+```
+
+说明：
+
+- `SSH_PRIVATE_KEY` 填部署服务器对应的私钥内容
+- 工作流会把当前仓库的 `main` 分支部署到服务器
+- 自动部署默认调用 `scripts/deploy-app.sh`
+- 服务器首次初始化仍然要先手动执行一次 `scripts/setup-server.sh` 和 `scripts/setup-nginx.sh`
+
+### 自动部署前的前提
+
+至少先确认这些项：
+
+- 服务器已经完成首次初始化
+- 域名和 Nginx 已配置完成
+- 服务器能够访问 GitHub 仓库
+- `scripts/deploy-app.sh` 当前指向的部署目录和仓库地址符合你的预期
+- 首次初始化最好不要使用 `root` 作为长期部署用户；如果当前只能用 `root`，请在切换到非 root 用户后再禁用 root SSH 登录
 
 ## 手动路径
 
@@ -184,7 +240,7 @@ DOMAIN=your-domain.com
 POSTGRES_PASSWORD=your-generated-password
 JWT_SECRET=your-generated-secret
 MEILISEARCH_MASTER_KEY=your-generated-key
-ALIYUN_MIRROR=https://your-registry-mirror.com
+DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/etc/letsencrypt/live/your-domain.com/fullchain.pem
 SSL_KEY_PATH=/etc/letsencrypt/live/your-domain.com/privkey.pem
 ```
@@ -201,6 +257,7 @@ chmod 644 ~/.ssh/annie-deploy.pub
 
 ```bash
 env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+env $(cat deploy.env | xargs) ./scripts/setup-nginx.sh
 env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 ```
 

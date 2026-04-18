@@ -38,7 +38,7 @@ POSTGRES_PASSWORD=your-secure-db-password-here
 JWT_SECRET=your-very-secure-jwt-secret-here
 MEILISEARCH_MASTER_KEY=your-secure-meilisearch-key-here
 
-ALIYUN_MIRROR=https://your-registry-mirror.com
+DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/path/to/your/certificate.pem
 SSL_KEY_PATH=/path/to/your/private.key
 ```
@@ -46,8 +46,9 @@ SSL_KEY_PATH=/path/to/your/private.key
 说明：
 
 - `SSH_*` 用于连接服务器
+- 推荐使用具备 `sudo` 权限的非 `root` 用户作为 `SSH_USER`
 - `POSTGRES_PASSWORD`、`JWT_SECRET`、`MEILISEARCH_MASTER_KEY` 会被部署脚本写入服务器端环境文件
-- `ALIYUN_MIRROR` 是 `setup-server.sh` 必填项
+- `DOCKER_REGISTRY_MIRROR` 是 `setup-server.sh` 必填项
 - `SSL_CERT_PATH`、`SSL_KEY_PATH` 是你本地机器上的证书路径，脚本会上传到服务器
 
 ### 2. 应用运行时变量

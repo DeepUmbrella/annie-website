@@ -132,7 +132,7 @@ POSTGRES_PASSWORD=secure-db-password
 JWT_SECRET=secure-jwt-secret
 MEILISEARCH_MASTER_KEY=secure-meili-key
 DOMAIN=your-domain.com
-ALIYUN_MIRROR=https://your-mirror.com
+DOCKER_REGISTRY_MIRROR=https://your-mirror.com
 SSL_CERT_PATH=path/to/cert.pem
 SSL_KEY_PATH=path/to/key.pem
 ```

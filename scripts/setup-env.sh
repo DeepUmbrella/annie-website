@@ -157,8 +157,8 @@ POSTGRES_PASSWORD=${db_password}
 JWT_SECRET=${jwt_secret}
 MEILISEARCH_MASTER_KEY=${meili_key}
 
-# Docker 镜像加速 (阿里云控制台获取)
-ALIYUN_MIRROR=https://your-registry-mirror.com
+# Docker 镜像加速
+DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 
 # SSL 证书路径 (使用 Let's Encrypt 或其他证书)
 SSL_CERT_PATH=/etc/letsencrypt/live/your-domain.com/fullchain.pem

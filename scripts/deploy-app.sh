@@ -14,10 +14,22 @@ set -euo pipefail
 
 SSH_TARGET="${SSH_USER}@${SSH_HOST}"
 SSH_OPTS=(-i "$SSH_KEY" -o StrictHostKeyChecking=no -o ConnectTimeout=30)
-REPO_URL="https://github.com/DeepUmbrella/annie-website.git"
-REMOTE_DIR="/root/annie-website"
-COMPOSE_CMD="docker compose"
+REMOTE_SUDO="sudo"
+if [ "$SSH_USER" = "root" ]; then
+    REMOTE_SUDO=""
+fi
+REPO_URL="${REPO_URL:-https://github.com/DeepUmbrella/annie-website.git}"
+DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
+REMOTE_DIR="${REMOTE_DIR:-/root/annie-website}"
+COMPOSE_CMD="${COMPOSE_CMD:-docker compose}"
 DATABASE_URL="postgresql://annie:${POSTGRES_PASSWORD}@postgres:5432/annie_db?schema=public"
+if [[ "$DOMAIN" == www.* ]]; then
+    API_BASE_DOMAIN="${DOMAIN#www.}"
+else
+    API_BASE_DOMAIN="${DOMAIN}"
+fi
+ANNIE_API_URL="${ANNIE_API_URL:-https://annie-api.${API_BASE_DOMAIN}}"
+ANNIE_API_KEY="${ANNIE_API_KEY:-your-annie-api-key}"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -89,6 +101,11 @@ create_backup() {
 rollback() {
     log_error "Deployment failed, attempting rollback..."
     ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
+        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_CMD='docker-compose'
+        else
+            COMPOSE_CMD='$COMPOSE_CMD'
+        fi
         if ls -d $REMOTE_DIR.backup.* >/dev/null 2>&1; then
             LATEST_BACKUP=\$(ls -td $REMOTE_DIR.backup.* | head -1)
             if [ -d \"\$LATEST_BACKUP\" ]; then
@@ -125,8 +142,8 @@ MEILISEARCH_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
 MEILI_MASTER_KEY=${MEILISEARCH_MASTER_KEY}
 JWT_SECRET=${JWT_SECRET}
 JWT_EXPIRES_IN=7d
-ANNIE_API_URL=https://annie-api.${DOMAIN}
-ANNIE_API_KEY=your-annie-api-key
+ANNIE_API_URL=${ANNIE_API_URL}
+ANNIE_API_KEY=${ANNIE_API_KEY}
 EOF
 
     cat >"$TMP_BACKEND_ENV" <<EOF
@@ -148,10 +165,10 @@ EOF
             cd $REMOTE_DIR
             git remote set-url origin $REPO_URL 2>/dev/null || git remote add origin $REPO_URL
             git fetch origin
-            (git checkout main 2>/dev/null || git checkout master 2>/dev/null || true)
-            (git pull --rebase origin main || git pull --rebase origin master)
+            git checkout $DEPLOY_BRANCH 2>/dev/null || git checkout -B $DEPLOY_BRANCH origin/$DEPLOY_BRANCH
+            git pull --rebase origin $DEPLOY_BRANCH
         else
-            rm -rf $REMOTE_DIR && git clone --branch main $REPO_URL $REMOTE_DIR || git clone $REPO_URL $REMOTE_DIR
+            rm -rf $REMOTE_DIR && git clone --branch $DEPLOY_BRANCH $REPO_URL $REMOTE_DIR
         fi
     "; then
         log_error "Failed to update code"
@@ -163,9 +180,9 @@ EOF
     if ! scp "${SSH_OPTS[@]}" "$TMP_ROOT_ENV" "$SSH_TARGET:/tmp/annie-root.env" ||
        ! scp "${SSH_OPTS[@]}" "$TMP_BACKEND_ENV" "$SSH_TARGET:/tmp/annie-backend.env" ||
        ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
-           sudo mv /tmp/annie-root.env $REMOTE_DIR/.env &&
-           sudo mv /tmp/annie-backend.env $REMOTE_DIR/backend/.env &&
-           sudo chmod 600 $REMOTE_DIR/.env $REMOTE_DIR/backend/.env
+           ${REMOTE_SUDO} mv /tmp/annie-root.env $REMOTE_DIR/.env &&
+           ${REMOTE_SUDO} mv /tmp/annie-backend.env $REMOTE_DIR/backend/.env &&
+           ${REMOTE_SUDO} chmod 600 $REMOTE_DIR/.env $REMOTE_DIR/backend/.env
        "; then
         log_error "Failed to upload environment files"
         rollback
@@ -175,6 +192,11 @@ EOF
     log_info "3) 检查 Docker 镜像加速并启动服务"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         set -e
+        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_CMD='docker-compose'
+        else
+            COMPOSE_CMD='$COMPOSE_CMD'
+        fi
         MIRRORS=\$(docker info --format '{{json .RegistryConfig.Mirrors}}' 2>/dev/null || echo '[]')
         if [ \"\$MIRRORS\" = '[]' ] || [ -z \"\$MIRRORS\" ]; then
             echo 'Docker 镜像加速未生效，请先重新执行 setup-server.sh 并确认 docker 已重启。'
@@ -188,7 +210,7 @@ EOF
         wait
 
         cd $REMOTE_DIR
-        $COMPOSE_CMD up -d --build
+        \$COMPOSE_CMD up -d --build
     "; then
         log_error "Failed to start services"
         rollback
@@ -198,7 +220,12 @@ EOF
     log_info "4) 初始化数据库"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         cd $REMOTE_DIR
-        $COMPOSE_CMD exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
+        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_CMD='docker-compose'
+        else
+            COMPOSE_CMD='$COMPOSE_CMD'
+        fi
+        \$COMPOSE_CMD exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
     "; then
         log_error "Failed to initialize database"
         rollback
@@ -208,11 +235,16 @@ EOF
     log_info "5) 检查服务状态"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         cd $REMOTE_DIR
+        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_CMD='docker-compose'
+        else
+            COMPOSE_CMD='$COMPOSE_CMD'
+        fi
         echo '=== Container Status ==='
-        $COMPOSE_CMD ps
+        \$COMPOSE_CMD ps
         echo
         echo '=== Service Logs ==='
-        $COMPOSE_CMD logs --tail=20 backend
+        \$COMPOSE_CMD logs --tail=20 backend
     "; then
         log_error "Failed to check service status"
         exit 1
