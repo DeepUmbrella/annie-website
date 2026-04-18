@@ -17,15 +17,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - annie-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   # Redis 缓存
   redis:
     image: redis:7
     container_name: annie-redis
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
       - redis_data:/data
     ports:
@@ -35,8 +42,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - annie-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
 
   # MeiliSearch 搜索引擎
   meilisearch:
@@ -46,6 +60,7 @@ services:
     environment:
       MEILI_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
       MEILI_ENV: development
+      MEILI_HTTP_PAYLOAD_SIZE_LIMIT: 100000000  # 100MB
     volumes:
       - meilisearch_data:/meili_data
     ports:
@@ -55,14 +70,23 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 60s
     networks:
       - annie-network
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
 
   # Nest.js 后端
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      args:
+        DATABASE_URL: ${DATABASE_URL}
     container_name: annie-backend
     restart: unless-stopped
     environment:
@@ -87,8 +111,20 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 60s
     networks:
       - annie-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   # React 前端
   frontend:
@@ -108,6 +144,17 @@ services:
       - "3000:80"
     networks:
       - annie-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:

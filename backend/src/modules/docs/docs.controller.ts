@@ -5,8 +5,8 @@ import { DocsService } from './docs.service';
 export class DocsController {
   constructor(private docsService: DocsService) {}
 
-  @Get(':path(*)')
-  async getDocContent(@Param('path') path: string) {
+  @Get('*')
+  async getDocContent(@Param('*') path: string) {
     return this.docsService.getDocContent(path);
   }
 
