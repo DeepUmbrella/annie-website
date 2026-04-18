@@ -6,11 +6,17 @@ WORKDIR /app
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
 
+ARG NPM_REGISTRY=https://registry.npmmirror.com
+
 # Copy package files
 COPY package*.json ./
 
 # Install full dependencies for build-time tooling such as Nest CLI and Prisma
-RUN npm ci && npm cache clean --force
+RUN npm config set registry "${NPM_REGISTRY}" \
+  && npm config set fund false \
+  && npm config set audit false \
+  && npm ci --prefer-offline --no-audit --no-fund \
+  && npm cache clean --force
 
 # Copy source code
 COPY . .
