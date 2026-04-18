@@ -23,6 +23,7 @@ DEPLOY_BRANCH="${DEPLOY_BRANCH:-main}"
 REMOTE_DIR="${REMOTE_DIR:-/root/annie-website}"
 COMPOSE_CMD="${COMPOSE_CMD:-docker compose}"
 DATABASE_URL="postgresql://annie:${POSTGRES_PASSWORD}@postgres:5432/annie_db?schema=public"
+NPM_REGISTRY="${NPM_REGISTRY:-https://registry.npmmirror.com}"
 if [[ "$DOMAIN" == www.* ]]; then
     API_BASE_DOMAIN="${DOMAIN#www.}"
 else
@@ -139,6 +140,7 @@ POSTGRES_USER=annie
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 POSTGRES_DB=annie_db
 DATABASE_URL=${DATABASE_URL}
+NPM_REGISTRY=${NPM_REGISTRY}
 REDIS_URL=redis://redis:6379
 MEILISEARCH_URL=http://meilisearch:7700
 MEILISEARCH_MASTER_KEY=${MEILISEARCH_MASTER_KEY}

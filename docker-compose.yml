@@ -87,6 +87,7 @@ services:
       dockerfile: Dockerfile
       args:
         DATABASE_URL: ${DATABASE_URL}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
     container_name: annie-backend
     restart: unless-stopped
     environment:
@@ -133,6 +134,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_API_URL: http://localhost:${BACKEND_PORT:-3001}
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
     container_name: annie-frontend
     restart: unless-stopped
     environment:
