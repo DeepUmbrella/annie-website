@@ -3,10 +3,14 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++
+ARG NPM_REGISTRY=https://registry.npmmirror.com
 
 COPY package*.json ./
-RUN npm ci && npm cache clean --force
+RUN npm config set registry "${NPM_REGISTRY}" \
+  && npm config set fund false \
+  && npm config set audit false \
+  && npm ci --prefer-offline --no-audit --no-fund \
+  && npm cache clean --force
 
 COPY . .
 RUN npm run build
