@@ -101,10 +101,13 @@ create_backup() {
 rollback() {
     log_error "Deployment failed, attempting rollback..."
     ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
-        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
-            COMPOSE_CMD='docker-compose'
+        if docker compose version >/dev/null 2>&1; then
+            COMPOSE_BIN='docker compose'
+        elif command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_BIN='docker-compose'
         else
-            COMPOSE_CMD='$COMPOSE_CMD'
+            echo 'No docker compose command found for rollback'
+            exit 1
         fi
         if ls -d $REMOTE_DIR.backup.* >/dev/null 2>&1; then
             LATEST_BACKUP=\$(ls -td $REMOTE_DIR.backup.* | head -1)
@@ -112,7 +115,7 @@ rollback() {
                 rm -rf $REMOTE_DIR
                 mv \"\$LATEST_BACKUP\" $REMOTE_DIR
                 cd $REMOTE_DIR
-                $COMPOSE_CMD up -d
+                \$COMPOSE_BIN up -d
                 echo 'Rollback completed'
             fi
         else
@@ -192,10 +195,13 @@ EOF
     log_info "3) 检查 Docker 镜像加速并启动服务"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         set -e
-        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
-            COMPOSE_CMD='docker-compose'
+        if docker compose version >/dev/null 2>&1; then
+            COMPOSE_BIN='docker compose'
+        elif command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_BIN='docker-compose'
         else
-            COMPOSE_CMD='$COMPOSE_CMD'
+            echo 'No docker compose command found'
+            exit 1
         fi
         MIRRORS=\$(docker info --format '{{json .RegistryConfig.Mirrors}}' 2>/dev/null || echo '[]')
         if [ \"\$MIRRORS\" = '[]' ] || [ -z \"\$MIRRORS\" ]; then
@@ -210,7 +216,7 @@ EOF
         wait
 
         cd $REMOTE_DIR
-        \$COMPOSE_CMD up -d --build
+        \$COMPOSE_BIN up -d --build
     "; then
         log_error "Failed to start services"
         rollback
@@ -220,12 +226,15 @@ EOF
     log_info "4) 初始化数据库"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         cd $REMOTE_DIR
-        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
-            COMPOSE_CMD='docker-compose'
+        if docker compose version >/dev/null 2>&1; then
+            COMPOSE_BIN='docker compose'
+        elif command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_BIN='docker-compose'
         else
-            COMPOSE_CMD='$COMPOSE_CMD'
+            echo 'No docker compose command found'
+            exit 1
         fi
-        \$COMPOSE_CMD exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
+        \$COMPOSE_BIN exec -T backend sh -lc 'npx prisma generate && npx prisma migrate deploy'
     "; then
         log_error "Failed to initialize database"
         rollback
@@ -235,16 +244,19 @@ EOF
     log_info "5) 检查服务状态"
     if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
         cd $REMOTE_DIR
-        if ! $COMPOSE_CMD version >/dev/null 2>&1 && command -v docker-compose >/dev/null 2>&1; then
-            COMPOSE_CMD='docker-compose'
+        if docker compose version >/dev/null 2>&1; then
+            COMPOSE_BIN='docker compose'
+        elif command -v docker-compose >/dev/null 2>&1; then
+            COMPOSE_BIN='docker-compose'
         else
-            COMPOSE_CMD='$COMPOSE_CMD'
+            echo 'No docker compose command found'
+            exit 1
         fi
         echo '=== Container Status ==='
-        \$COMPOSE_CMD ps
+        \$COMPOSE_BIN ps
         echo
         echo '=== Service Logs ==='
-        \$COMPOSE_CMD logs --tail=20 backend
+        \$COMPOSE_BIN logs --tail=20 backend
     "; then
         log_error "Failed to check service status"
         exit 1

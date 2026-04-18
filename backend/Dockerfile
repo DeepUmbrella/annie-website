@@ -9,8 +9,8 @@ RUN apk add --no-cache dumb-init
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production && npm cache clean --force
+# Install full dependencies for build-time tooling such as Nest CLI and Prisma
+RUN npm ci && npm cache clean --force
 
 # Copy source code
 COPY . .
@@ -22,6 +22,9 @@ RUN npx prisma generate
 
 # Build application
 RUN npm run build
+
+# Remove dev dependencies before copying runtime artifacts
+RUN npm prune --omit=dev
 
 # Production stage
 FROM node:22-alpine AS runner
