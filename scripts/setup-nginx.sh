@@ -80,9 +80,18 @@ main() {
 
     cat >"$TMP_NGINX_CONF" <<EOF
 server {
-  listen 80;
+  listen 80 default_server;
   server_name ${SERVER_NAMES};
-  return 301 https://\$host\$request_uri;
+
+  location /health {
+    access_log off;
+    return 200 "healthy\n";
+    add_header Content-Type text/plain;
+  }
+
+  location / {
+    return 301 https://\$host\$request_uri;
+  }
 }
 
 server {
@@ -145,6 +154,7 @@ EOF
             echo "Installing Nginx..."
             ${REMOTE_SUDO} apt install -y nginx
         fi
+        ${REMOTE_SUDO} rm -f /etc/nginx/sites-enabled/default
         ${REMOTE_SUDO} systemctl enable nginx
         ${REMOTE_SUDO} systemctl restart nginx
         echo \"Nginx version: \$(nginx -v 2>&1)\"
