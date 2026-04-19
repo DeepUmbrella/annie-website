@@ -60,7 +60,7 @@ const Features = () => {
     <div>
       <PageHero
         eyebrow="Features"
-        title="围绕 Annie 构建更统一的 AI 工作体验"
+        title="欢迎广大网友"
         description="从对话、知识到自动化与接入能力，Annie 将 AI 能力整合为一个连续的产品体验。"
         actions={
           <>
