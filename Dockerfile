@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM docker.m.daocloud.io/library/node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -33,7 +33,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # Production stage
-FROM node:22-alpine AS runner
+FROM docker.m.daocloud.io/library/node:22-alpine AS runner
 
 # Install dumb-init
 RUN apk add --no-cache dumb-init curl
