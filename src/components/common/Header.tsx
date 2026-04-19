@@ -21,7 +21,7 @@ const Header = () => {
 
   return (
     <header className="sticky top-0 z-50 px-4 pt-4 md:px-6">
-      <div className="mx-auto flex max-w-8xl items-center justify-between gap-6 rounded-full border border-white/10 bg-white/[0.04] px-6 py-2.5 shadow-[0_12px_40px_rgba(0,0,0,0.24)] backdrop-blur-2xl md:px-8">
+      <div className="mx-auto flex max-w-8xl items-center justify-between gap-6 rounded-full border border-white/10 bg-white/[0.035] px-6 py-2.5 shadow-[0_12px_40px_rgba(2,6,23,0.45)] backdrop-blur-2xl md:px-8">
         <Link to="/" className="text-xl font-bold tracking-[-0.02em] text-white md:text-2xl">
           Annie AI
         </Link>
@@ -64,7 +64,7 @@ const Header = () => {
               </button>
               <button
                 onClick={() => navigate('/register')}
-                className="rounded-full bg-gradient-to-r from-annie-purple to-annie-lavender px-6 py-2.5 text-sm font-semibold text-white shadow-glow-lg transition-all hover:-translate-y-0.5 hover:brightness-110"
+                className="rounded-full bg-gradient-to-r from-annie-cyan via-sky-400 to-annie-lavender px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-glow-lg transition-all hover:-translate-y-0.5 hover:brightness-110"
               >
                 注册
               </button>

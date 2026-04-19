@@ -19,22 +19,22 @@ function App() {
     <Provider store={store}>
       <ConfigProvider locale={zhCN} theme={{
         token: {
-          colorPrimary: '#7C3AED',
+          colorPrimary: '#22D3EE',
           colorText: '#F8FAFC',
-          colorTextSecondary: '#94A3B8',
-          colorTextTertiary: '#64748B',
-          colorTextQuaternary: '#475569',
+          colorTextSecondary: '#A5B4FC',
+          colorTextTertiary: '#94A3B8',
+          colorTextQuaternary: '#64748B',
           colorBgContainer: 'transparent',
-          colorBgElevated: 'rgba(255, 255, 255, 0.06)',
-          colorBorder: 'rgba(255, 255, 255, 0.10)',
+          colorBgElevated: 'rgba(255, 255, 255, 0.05)',
+          colorBorder: 'rgba(148, 163, 184, 0.16)',
           borderRadius: 12,
         },
         components: {
           Input: {
-            colorBgContainer: 'rgba(255, 255, 255, 0.03)',
-            colorBorder: 'rgba(255, 255, 255, 0.10)',
+            colorBgContainer: 'rgba(255, 255, 255, 0.04)',
+            colorBorder: 'rgba(148, 163, 184, 0.16)',
             colorText: '#F8FAFC',
-            colorTextPlaceholder: 'rgba(255, 255, 255, 0.40)',
+            colorTextPlaceholder: 'rgba(248, 250, 252, 0.38)',
           },
           Button: {
             colorText: '#F8FAFC',
