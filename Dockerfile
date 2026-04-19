@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22-alpine AS builder
+FROM docker.m.daocloud.io/library/node:22-alpine AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN npm run build
 
 
 # Production stage
-FROM nginx:alpine AS runner
+FROM docker.m.daocloud.io/library/nginx:alpine AS runner
 
 RUN apk add --no-cache curl
 
