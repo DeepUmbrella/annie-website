@@ -1,6 +1,8 @@
 import Section from '../components/common/Section';
 import ButtonLink from '../components/common/ButtonLink';
 
+const linkUrl = 'https://platform.minimaxi.com/subscribe/token-plan?code=H74avrqWBT&source=link';
+
 const Home = () => {
   const capabilities = [
     { title: '智能对话', description: '用自然语言完成问答、协作与信息整合。' },
@@ -257,11 +259,19 @@ const Home = () => {
           <p className="mx-auto mb-8 max-w-2xl text-base leading-8 text-white/70 md:text-lg">
             用更统一的 AI 交互体验连接知识、协作与自动化能力。
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <ButtonLink to="/register">开始使用</ButtonLink>
             <ButtonLink to="/docs" variant="secondary">
               查看开发文档
             </ButtonLink>
+            <a
+              href={linkUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/6 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-white/30 hover:bg-white/10"
+            >
+              订阅链接
+            </a>
           </div>
         </div>
       </Section>
