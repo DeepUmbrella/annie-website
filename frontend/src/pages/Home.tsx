@@ -1,7 +1,7 @@
 import Section from '../components/common/Section';
 import ButtonLink from '../components/common/ButtonLink';
 
-const linkUrl = 'https://platform.minimaxi.com/subscribe/token-plan?code=H74avrqWBT&source=link';
+const minimaxLink = 'https://platform.minimaxi.com/subscribe/token-plan?code=H74avrqWBT&source=link';
 
 const Home = () => {
   const capabilities = [
@@ -50,11 +50,19 @@ const Home = () => {
                 连接知识、对话与自动化能力，为个人、团队与开发者提供统一的 AI 工作入口。
               </p>
             </div>
-            <div className="flex flex-wrap gap-4 pt-2">
+            <div className="flex flex-wrap items-center gap-4 pt-2">
               <ButtonLink to="/register">立即体验</ButtonLink>
               <ButtonLink to="/docs" variant="secondary">
                 查看文档
               </ButtonLink>
+              <a
+                href={minimaxLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-annie-cyan to-annie-purple px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-cyan-glow hover:-translate-y-0.5"
+              >
+                minimax codeplan 打折推荐
+              </a>
             </div>
           </div>
 
@@ -264,14 +272,6 @@ const Home = () => {
             <ButtonLink to="/docs" variant="secondary">
               查看开发文档
             </ButtonLink>
-            <a
-              href={linkUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/6 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:border-white/30 hover:bg-white/10"
-            >
-              订阅链接
-            </a>
           </div>
         </div>
       </Section>
