@@ -1,15 +1,25 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import type { RootState, AppDispatch } from '../../store';
+import { getCurrentUserAsync } from '../../slices/authSlice';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, token } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (token && !user) {
+      void dispatch(getCurrentUserAsync());
+    }
+  }, [dispatch, token, user]);
 
   const navItems = [
     { key: 'features', label: '功能', to: '/features' },
     { key: 'docs', label: '文档', to: '/docs' },
     { key: 'blog', label: '博客', to: '/blog' },
+    { key: 'chat', label: '对话', to: '/chat' },
     { key: 'contact', label: '联系', to: '/contact' },
   ];
 
