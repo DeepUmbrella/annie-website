@@ -15,7 +15,7 @@ const Docs = () => {
     const searchDocs = async () => {
       if (searchQuery) {
         try {
-          const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+          const API = import.meta.env.VITE_API_URL || '';
           const response = await axios.get(`${API}/api/v1/docs/search?q=${searchQuery}`);
           setSearchResults(response.data);
         } catch (error) {
