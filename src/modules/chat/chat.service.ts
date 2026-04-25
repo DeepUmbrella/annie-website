@@ -70,6 +70,22 @@ export class ChatService {
     };
   }
 
+  /**
+   * Persists user message + assistant placeholder and returns them.
+   * Used by the streaming endpoint so both messages are committed before
+   * the SSE response begins.
+   */
+  async writeStreamMessages(sessionId: string, userId: string, content: string) {
+    await this.assertSessionOwnership(sessionId, userId);
+    const userMsg = await this.prisma.message.create({
+      data: { sessionId, role: 'USER', content },
+    });
+    const assistantPlaceholder = await this.prisma.message.create({
+      data: { sessionId, role: 'ASSISTANT', content: '' },
+    });
+    return { userMessage: userMsg, assistantPlaceholder };
+  }
+
   async getSessions(userId: string) {
     return this.prisma.chatSession.findMany({
       where: { userId },
