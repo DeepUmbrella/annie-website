@@ -26,12 +26,17 @@ export class SessionStateStore {
 
   /**
    * Persists session state to the file, creating parent directories if needed.
+   * @throws Error if the file cannot be written; the error carries the underlying I/O cause.
    */
   save(state: DedicatedSessionState): void {
     const dir = path.dirname(this.filePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    fs.writeFileSync(this.filePath, JSON.stringify(state, null, 2), 'utf-8');
+    try {
+      fs.writeFileSync(this.filePath, JSON.stringify(state, null, 2), 'utf-8');
+    } catch (cause) {
+      throw new Error(`Failed to persist session state to "${this.filePath}"`, { cause });
+    }
   }
 }
