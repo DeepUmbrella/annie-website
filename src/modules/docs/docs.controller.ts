@@ -5,11 +5,6 @@ import { DocsService } from './docs.service';
 export class DocsController {
   constructor(private docsService: DocsService) {}
 
-  @Get('*')
-  async getDocContent(@Param('*') path: string) {
-    return this.docsService.getDocContent(path);
-  }
-
   @Get('tree')
   async getDocTree() {
     return this.docsService.getDocTree();
@@ -21,5 +16,11 @@ export class DocsController {
       throw new Error('搜索关键词不能为空');
     }
     return this.docsService.searchDocs(query);
+  }
+
+  @Get('*path')
+  async getDocContent(@Param('path') pathValue: string | string[]) {
+    const docPath = Array.isArray(pathValue) ? pathValue.join('/') : pathValue;
+    return this.docsService.getDocContent(docPath);
   }
 }

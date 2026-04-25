@@ -9,15 +9,6 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 export class ChatController {
   constructor(private chatService: ChatService) {}
 
-  @Post(':sessionId')
-  async sendMessage(
-    @Param('sessionId') sessionId: string,
-    @CurrentUser() userId: string,
-    @Body() dto: SendMessageDto,
-  ) {
-    return this.chatService.sendMessage(sessionId, userId, dto.message);
-  }
-
   @Get('sessions')
   async getSessions(@CurrentUser() userId: string) {
     return this.chatService.getSessions(userId);
@@ -37,5 +28,14 @@ export class ChatController {
     @CurrentUser() userId: string,
   ) {
     return this.chatService.deleteSession(sessionId, userId);
+  }
+
+  @Post(':sessionId')
+  async sendMessage(
+    @Param('sessionId') sessionId: string,
+    @CurrentUser() userId: string,
+    @Body() dto: SendMessageDto,
+  ) {
+    return this.chatService.sendMessage(sessionId, userId, dto.message);
   }
 }
