@@ -70,6 +70,34 @@ describe('SessionStateStore', () => {
       expect(JSON.parse(raw)).toEqual(state);
     });
 
+    it('should throw a descriptive error when write fails', () => {
+      // Isolate the store so we can mock fs.writeFileSync before it is loaded.
+      let store: InstanceType<typeof SessionStateStore>;
+      const writeError = new Error('Simulated disk full');
+      jest.isolateModules(() => {
+        jest.doMock('fs', () => ({
+          ...jest.requireActual<typeof import('fs')>('fs'),
+          writeFileSync: jest.fn().mockImplementation(() => {
+            throw writeError;
+          }),
+        }));
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { SessionStateStore: IsolatedStore } = require('./session-state.store');
+        store = new IsolatedStore(stateFilePath);
+        const state: DedicatedSessionState = {
+          sessionKey: 'key-err',
+          createdAt: '2026-04-26T00:00:00.000Z',
+          updatedAt: '2026-04-26T00:00:00.000Z',
+        };
+        expect(() => store!.save(state)).toThrow(/Failed to persist session state/i);
+        try {
+          store!.save(state);
+        } catch (err: any) {
+          expect(err.cause).toBe(writeError);
+        }
+      });
+    });
+
     it('should overwrite existing file', () => {
       const store = new SessionStateStore(stateFilePath);
 
