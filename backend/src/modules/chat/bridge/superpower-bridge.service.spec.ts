@@ -254,13 +254,9 @@ describe('SuperpowerBridgeService', () => {
       service
         .stream({ sessionKey: 's6', userId: 'u1', content: 'timeout test' }, { frameGenerator: neverGen() })
         .subscribe({
-          next: (event) => {
-            // Timeout is delivered as a normal event first (then as error)
-            expect(event.type).toBe('error');
-            expect((event as any).code).toBe('timeout');
-          },
           error: (err) => {
-            expect((err as any).code).toBe('timeout');
+            expect(err.type).toBe('error');
+            expect(err.code).toBe('timeout');
             done();
           },
         });

@@ -133,14 +133,12 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
         .subscribe({
           next: () => {
             if (completed) return;
-            const evt: BridgeStreamEvent = {
+            observer.error({
               type: 'error',
               requestId,
               code: 'timeout',
               message: `No response from gateway within ${config.firstChunkTimeoutMs}ms`,
-            };
-            observer.next(evt);
-            observer.error(evt);
+            } as BridgeStreamEvent);
             cleanup();
           },
         });
@@ -166,42 +164,43 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
                 observer.next({ type: 'done', requestId, fullText: accumulatedText });
                 observer.complete();
                 break;
-              case 'error':
+              case 'error': {
                 cleanup();
-                const evt: BridgeStreamEvent = {
+                const code: BridgeStreamEvent['code'] =
+                  frame.code === 'service_unavailable' ||
+                  frame.code === 'session_busy' ||
+                  frame.code === 'timeout' ||
+                  frame.code === 'upstream_error'
+                    ? (frame.code as BridgeStreamEvent['code'])
+                    : 'upstream_error';
+                observer.error({
                   type: 'error',
                   requestId,
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  code: (frame.code ?? 'upstream_error') as any,
+                  code,
                   message: frame.message,
-                };
-                observer.next(evt);
-                observer.error(evt);
+                });
                 break;
+              }
               default: {
                 cleanup();
-                const evt: BridgeStreamEvent = {
+                observer.error({
                   type: 'error',
                   requestId,
-                  code: 'upstream_error',
+                  code: 'upstream_error' as const,
                   message: `Unknown raw frame: ${JSON.stringify(frame)}`,
-                };
-                observer.next(evt);
-                observer.error(evt);
+                });
               }
             }
           },
           error: (err) => {
             if (completed) return;
             cleanup();
-            const evt: BridgeStreamEvent = {
+            observer.error({
               type: 'error',
               requestId,
-              code: 'upstream_error',
+              code: 'upstream_error' as const,
               message: err?.message ?? String(err),
-            };
-            observer.next(evt);
-            observer.error(evt);
+            });
           },
         });
 
