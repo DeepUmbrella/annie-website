@@ -36,7 +36,25 @@ export class ChatService {
     });
   }
 
-  async finalizeAssistantMessage(messageId: string, content: string) {
+  async finalizeAssistantMessage(messageId: string, userId: string, content: string) {
+    // Fetch message with its session to verify ownership
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { session: { select: { userId: true } } },
+    });
+
+    if (!message) {
+      throw new Error('Message not found');
+    }
+
+    if (message.role !== 'ASSISTANT') {
+      throw new Error('Only assistant messages can be finalized');
+    }
+
+    if (message.session.userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
     return this.prisma.message.update({
       where: { id: messageId },
       data: { content },
