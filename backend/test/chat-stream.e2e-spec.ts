@@ -159,7 +159,7 @@ describe('ChatController (e2e) — streaming endpoint', () => {
       // Wait for the HTTP response headers (not the SSE completion)
       req.on('response', (res: import('http').IncomingMessage) => {
         // Verify the response status and headers immediately
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(201);
 
         // The bridge was called with correct args
         expect(mockBridgeStream).toHaveBeenCalledTimes(1);
@@ -176,7 +176,7 @@ describe('ChatController (e2e) — streaming endpoint', () => {
           });
           mockBridgeStreamCall!.frames$.next({ type: 'text', text: 'Hi' });
           mockBridgeStreamCall!.frames$.next({ type: 'text', text: ' there!' });
-          mockBridgeStreamCall!.frames$.next({ type: 'done' });
+          mockBridgeStreamCall!.frames$.next({ type: 'done', requestId: 'req_test_1', fullText: 'Hi there!' });
           mockBridgeStreamCall!.frames$.complete();
         });
 

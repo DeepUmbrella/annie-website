@@ -69,6 +69,7 @@ export class ChatController {
       .writeStreamMessages(sessionId, userId, dto.message)
       .then(({ assistantPlaceholder }) => {
         // 2. Set SSE headers
+        res.status(HttpStatus.CREATED);
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.flushHeaders();
@@ -94,7 +95,7 @@ export class ChatController {
               this.chatService
                 .finalizeAssistantMessage(assistantPlaceholder.id, userId, event.fullText)
                 .catch((err) => console.error('[stream] finalize failed:', err));
-              res.write(`event: done\ndata: ${JSON.stringify({ requestId: event.requestId })}\n\n`);
+              res.write(`event: done\ndata: ${JSON.stringify({ requestId: event.requestId, fullText: event.fullText })}\n\n`);
               res.end();
               destroy$.next();
               destroy$.complete();
