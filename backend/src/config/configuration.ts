@@ -18,7 +18,9 @@ export default () => ({
     masterKey: process.env.MEILISEARCH_MASTER_KEY,
   },
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin:
+      process.env.CORS_ORIGIN ||
+      'http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173,http://127.0.0.1:5173',
   },
   annie: {
     apiUrl: process.env.ANNIE_API_URL,

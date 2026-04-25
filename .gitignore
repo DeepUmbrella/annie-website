@@ -39,6 +39,8 @@ backend/src/generated/
 coverage/
 .nyc_output/
 *.lcov
+frontend/test-results/
+frontend/playwright-report/
 
 # Logs
 logs/

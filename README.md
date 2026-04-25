@@ -62,7 +62,7 @@ docker compose down
 
 #### 本地开发
 
-适合单独调试前后端代码。此模式下数据库、Redis、MeiliSearch 应运行在本机，连接地址使用 `localhost`。
+适合单独调试前后端代码。
 
 ```bash
 cp .env.local.example .env.local
@@ -87,8 +87,10 @@ npm run dev
 说明：
 
 - 后端会优先读取 `backend/.env.local`、`backend/.env`，其次读取根目录 `.env.local`、`.env`。
-- 推荐把本地开发配置维护在项目根目录 `.env.local`。
-- 前端开发服务器默认运行在 http://localhost:5173。
+- 推荐把本地开发配置维护在项目根目录 `.env.local` 或 `.env`。
+- 当前前端开发服务器默认运行在 `http://127.0.0.1:3000`。
+- 当前后端默认运行在 `http://127.0.0.1:3001`。
+- 本地开发既可以连接本机上的 PostgreSQL / Redis / MeiliSearch，也可以连接另一台机器上的同类服务，只要环境变量配置正确。
 
 ## 三种常见工作方式
 
@@ -116,11 +118,11 @@ docker compose --env-file .env.docker up -d
 
 ### 本地开发
 
-使用 `.env.local`，本机服务通过 `localhost` 连接：
+使用 `.env.local` 或根目录 `.env`：
 
-- `DATABASE_URL` 使用 `localhost:5432`
-- `REDIS_URL` 使用 `localhost:6379`
-- `MEILISEARCH_URL` 使用 `localhost:7700`
+- 前端开发服务器：`127.0.0.1:3000`
+- 后端 API：`127.0.0.1:3001`
+- `DATABASE_URL` / `REDIS_URL` / `MEILISEARCH_URL` 可以指向本机，也可以指向局域网或另一台开发机
 - 后端监听端口使用 `PORT`
 
 推荐做法：
@@ -200,7 +202,51 @@ npm run dev
 npm run build
 npm run preview
 npm run lint
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:ui
 ```
+
+## Playwright E2E
+
+前端已经接入本地 Playwright Runner，推荐用它做本地联调，而不是依赖浏览器工具直接访问 localhost。
+
+### 安装
+
+```bash
+cd frontend
+npm install
+npx playwright install chromium
+```
+
+### 运行
+
+```bash
+cd frontend
+npm run test:e2e
+npm run test:e2e:headed
+npm run test:e2e:ui
+```
+
+### 当前已覆盖的联调场景
+
+- 首页打开与基础导航
+- 注册 / 登录 / 恢复登录态
+- 联系页反馈提交
+- Docs 搜索
+- Blog 列表 / 详情
+- Chat 创建会话 / 发送消息 / 回车发送
+- Profile 页面加载与保存资料
+
+## 当前本地联调状态
+
+目前本地联调已经验证通过的链路包括：
+
+- 前端 `127.0.0.1:3000`
+- 后端 `127.0.0.1:3001`
+- 后端 API 使用统一前缀 `/api/v1`
+- 认证、Docs、Blog、Chat、Feedback、Profile 基础链路可用
+- 前端与远程 PostgreSQL / Redis / MeiliSearch 也可通过环境变量接入
 
 ## 项目结构
 

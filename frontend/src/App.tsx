@@ -9,7 +9,10 @@ import Home from './pages/Home';
 import Features from './pages/Features';
 import Docs from './pages/Docs';
 import Blog from './pages/Blog';
+import BlogDetail from './pages/BlogDetail';
+import Chat from './pages/Chat';
 import Contact from './pages/Contact';
+import Profile from './pages/Profile';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import './index.css';
@@ -64,7 +67,10 @@ function App() {
                 <Route path="/features" element={<Features />} />
                 <Route path="/docs" element={<Docs />} />
                 <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogDetail />} />
+                <Route path="/chat" element={<Chat />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="*" element={<Navigate to="/" />} />
