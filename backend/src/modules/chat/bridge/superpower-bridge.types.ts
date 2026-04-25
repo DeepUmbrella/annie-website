@@ -9,6 +9,7 @@ export type BridgeStreamEvent =
       message: string;
     };
 
+/** Schema of the dedicated-session state file persisted at stateFilePath. */
 export type DedicatedSessionState = {
   sessionKey: string;
   sessionId?: string;
@@ -18,7 +19,7 @@ export type DedicatedSessionState = {
 
 export type SuperpowerGatewayConfig = {
   url: string;
-  token: string;
+  token?: string;
   targetAgent: string;
   sessionLabel: string;
   stateFilePath: string;
