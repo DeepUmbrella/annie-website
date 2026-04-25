@@ -1,7 +1,11 @@
-import { Empty, Spin, Tag, Typography } from 'antd';
+import { Empty, Spin, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import axios from 'axios';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
@@ -18,7 +22,6 @@ type BlogPost = {
   author?: { username: string };
 };
 
-const { Paragraph } = Typography;
 const API = import.meta.env.VITE_API_URL || '';
 
 const BlogDetail = () => {
@@ -69,7 +72,7 @@ const BlogDetail = () => {
   return (
     <div>
       <PageHero
-        eyebrow="Blog Detail"
+        eyebrow="Blog"
         title={post.title}
         description={post.excerpt || 'Annie 博客文章详情'}
       />
@@ -97,12 +100,82 @@ const BlogDetail = () => {
           </div>
 
           <GlassCard className="p-6 md:p-8">
-            <Paragraph className="mb-6 text-base leading-8 text-white/72">
-              {post.excerpt}
-            </Paragraph>
-            <pre className="whitespace-pre-wrap break-words rounded-[1.25rem] border border-white/10 bg-black/20 p-5 text-sm leading-7 text-white/75">
+            {post.excerpt && (
+              <p className="mb-6 text-base leading-8 text-white/72 border-l-2 border-annie-cyan pl-4 italic">
+                {post.excerpt}
+              </p>
+            )}
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                code({ node, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || '');
+                  const codeString = String(children).replace(/\n$/, '');
+                  const isInline = !match && !codeString.includes('\n');
+                  if (isInline) {
+                    return (
+                      <code className="rounded-md bg-white/10 px-1.5 py-0.5 font-mono text-sm text-annie-cyan" {...props}>
+                        {children}
+                      </code>
+                    );
+                  }
+                  return (
+                    <SyntaxHighlighter
+                      style={oneDark}
+                      language={match ? match[1] : 'bash'}
+                      PreTag="div"
+                      className="rounded-xl !bg-[#1a1b26] !my-4 text-sm"
+                      customStyle={{
+                        margin: 0,
+                        borderRadius: '0.75rem',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                      }}
+                    >
+                      {codeString}
+                    </SyntaxHighlighter>
+                  );
+                },
+                p({ children }) {
+                  return <p className="mb-4 leading-7 text-white/80">{children}</p>;
+                },
+                h1({ children }) {
+                  return <h1 className="mb-4 mt-8 text-2xl font-bold text-white">{children}</h1>;
+                },
+                h2({ children }) {
+                  return <h2 className="mb-3 mt-6 text-xl font-bold text-white">{children}</h2>;
+                },
+                h3({ children }) {
+                  return <h3 className="mb-2 mt-4 text-lg font-bold text-white">{children}</h3>;
+                },
+                ul({ children }) {
+                  return <ul className="mb-4 list-disc space-y-1 pl-6 text-white/80">{children}</ul>;
+                },
+                ol({ children }) {
+                  return <ol className="mb-4 list-decimal space-y-1 pl-6 text-white/80">{children}</ol>;
+                },
+                li({ children }) {
+                  return <li className="leading-7">{children}</li>;
+                },
+                a({ href, children }) {
+                  return (
+                    <a href={href} className="text-annie-cyan underline hover:text-cyan-400" target="_blank" rel="noopener noreferrer">
+                      {children}
+                    </a>
+                  );
+                },
+                blockquote({ children }) {
+                  return <blockquote className="border-l-2 border-annie-cyan/60 pl-4 italic text-white/60">{children}</blockquote>;
+                },
+                hr() {
+                  return <hr className="my-6 border-white/10" />;
+                },
+                strong({ children }) {
+                  return <strong className="font-bold text-white">{children}</strong>;
+                },
+              }}
+            >
               {post.content}
-            </pre>
+            </ReactMarkdown>
           </GlassCard>
         </div>
       </Section>
