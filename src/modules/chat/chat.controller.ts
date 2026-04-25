@@ -10,7 +10,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { Subject } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ChatService } from './chat.service';
 import { SuperpowerBridgeService } from './bridge/superpower-bridge.service';
@@ -76,7 +76,20 @@ export class ChatController {
 
         const destroy$ = new Subject<void>();
 
-        // 3. Call bridge stream
+        // 3. Safety fallback: force-close SSE if it hangs for any reason.
+        // Declared here so all termination paths can clear it.
+        const safetyTimeout = setTimeout(() => {
+          if (!res.writableEnded) {
+            console.warn('[stream] safety timeout — forcing SSE close');
+            destroy$.next();
+            destroy$.complete();
+            subscription?.unsubscribe();
+            this.bridgeService.endStream(sessionId);
+            res.end();
+          }
+        }, 5000);
+
+        // 4. Call bridge stream
         const stream$ = this.bridgeService.stream({
           sessionKey: sessionId,
           userId,
@@ -84,7 +97,8 @@ export class ChatController {
         });
 
         // 4. Relay bridge events as SSE to the HTTP response
-        stream$.pipe(takeUntil(destroy$)).subscribe({
+        let subscription: Subscription | null = null;
+        subscription = stream$.pipe(takeUntil(destroy$)).subscribe({
           next: (event: BridgeStreamEvent) => {
             if (event.type === 'chunk') {
               res.write(`event: chunk\ndata: ${JSON.stringify({ text: event.text })}\n\n`);
@@ -96,44 +110,47 @@ export class ChatController {
                 .finalizeAssistantMessage(assistantPlaceholder.id, userId, event.fullText)
                 .catch((err) => console.error('[stream] finalize failed:', err));
               res.write(`event: done\ndata: ${JSON.stringify({ requestId: event.requestId, fullText: event.fullText })}\n\n`);
-              res.end();
+              clearTimeout(safetyTimeout);
+              // Signal takeUntil BEFORE res.end() to avoid race with the close event.
               destroy$.next();
-              destroy$.complete();
+              res.end();
             }
           },
           error: (err: unknown) => {
+            clearTimeout(safetyTimeout);
             const bridgeErr = err as { type: 'error'; code: string; message: string };
             console.error('[stream] bridge error:', err);
             res.write(
               `event: error\ndata: ${JSON.stringify({ code: bridgeErr.code, message: bridgeErr.message })}\n\n`,
             );
-            res.end();
+            // Signal takeUntil BEFORE res.end() to avoid race with the close event.
             destroy$.next();
-            destroy$.complete();
+            res.end();
           },
           complete: () => {
             // Observable completed — always close the SSE stream.
             // This handles the case where frames complete without a "done" event.
-            res.end();
+            console.log('[DEBUG complete handler] fired!');
+            clearTimeout(safetyTimeout);
             destroy$.next();
-            destroy$.complete();
+            if (!res.writableEnded) {
+              console.log('[DEBUG complete handler] calling res.end()');
+              res.end();
+            }
           },
         });
 
         // 5. Clean up if client disconnects
         res.on('close', () => {
+          clearTimeout(safetyTimeout);
           this.bridgeService.endStream(sessionId);
+          // Signal takeUntil to unsubscribe from the bridge stream.
           destroy$.next();
           destroy$.complete();
+          // Also explicitly unsubscribe to ensure cleanup even if takeUntil
+          // has already been unsubscribed by another path.
+          subscription?.unsubscribe();
         });
-
-        // 6. Safety fallback: force-close SSE if it hangs for any reason
-        const safetyTimeout = setTimeout(() => {
-          if (!res.writableEnded) {
-            console.warn('[stream] safety timeout — forcing SSE close');
-            res.end();
-          }
-        }, 5000);
       })
       .catch((err) => {
         console.error('[stream] writeStreamMessages failed:', err);
