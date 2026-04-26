@@ -4,6 +4,7 @@ import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
+import { streamChatMessage, getErrorMessage } from '../lib/chatStream';
 
 type ChatMessage = {
   id: string;
@@ -26,6 +27,8 @@ const Chat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [draft, setDraft] = useState('');
+  /** Text accumulated from SSE chunk events for the in-progress assistant draft */
+  const [streamingText, setStreamingText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const token = useMemo(() => localStorage.getItem('token'), []);
@@ -59,7 +62,7 @@ const Chat = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [activeSession?.messages]);
+  }, [activeSession?.messages, streamingText]);
 
   const createSession = async () => {
     if (!token) return;
@@ -78,29 +81,118 @@ const Chat = () => {
   };
 
   const sendMessage = async () => {
-    if (!token || !activeSessionId || !draft.trim()) return;
+    if (!token || !activeSessionId || !draft.trim() || sending) return;
     const content = draft.trim();
     setSending(true);
-    try {
-      const response = await axios.post(
-        `${API}/api/v1/chat/${activeSessionId}`,
-        { message: content },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+    setDraft('');
 
+    const optimisticUserMsg: ChatMessage = {
+      id: `optimistic-${Date.now()}`,
+      role: 'USER',
+      content,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Optimistic user message
+    setSessions((prev) =>
+      prev.map((session) =>
+        session.id === activeSessionId
+          ? { ...session, messages: [...(session.messages || []), optimisticUserMsg] }
+          : session,
+      ),
+    );
+
+    // Reset streaming state
+    setStreamingText('');
+
+    // Local variable captured by all callbacks — avoids stale closure over state
+    let placeholderId: string | null = null;
+
+    try {
+      streamChatMessage(
+        activeSessionId,
+        token,
+        content,
+        {
+          onStart: (requestId) => {
+            placeholderId = `assistant-${requestId}`;
+            // Create a placeholder assistant message entry
+            const placeholder: ChatMessage = {
+              id: placeholderId,
+              role: 'ASSISTANT',
+              content: '',
+              createdAt: new Date().toISOString(),
+            };
+
+            setStreamingText('');
+            setSessions((prev) =>
+              prev.map((session) =>
+                session.id === activeSessionId
+                  ? { ...session, messages: [...(session.messages || []), placeholder] }
+                  : session,
+              ),
+            );
+          },
+          onChunk: (text) => {
+            setStreamingText((prev) => prev + text);
+          },
+          onDone: (fullText) => {
+            if (!placeholderId) return;
+            // Replace placeholder content with the full response
+            setSessions((prev) =>
+              prev.map((session) =>
+                session.id === activeSessionId
+                  ? {
+                      ...session,
+                      messages: (session.messages || []).map((msg) =>
+                        msg.id === placeholderId ? { ...msg, content: fullText } : msg,
+                      ),
+                    }
+                  : session,
+              ),
+            );
+            setStreamingText('');
+            placeholderId = null;
+          },
+          onError: (code, errMsg) => {
+            const display = getErrorMessage(code, errMsg || '发送消息失败');
+            message.error(display);
+            // Remove the placeholder assistant message and optimistic user message on error
+            setSessions((prev) =>
+              prev.map((session) =>
+                session.id === activeSessionId
+                  ? {
+                      ...session,
+                      messages: (session.messages || []).filter(
+                        (msg) =>
+                          msg.id !== placeholderId &&
+                          !msg.id.startsWith('optimistic-'),
+                      ),
+                    }
+                  : session,
+              ),
+            );
+            setStreamingText('');
+            placeholderId = null;
+          },
+        },
+      );
+    } catch (error: any) {
+      message.error(error.message || '发送消息失败');
+      // Clean up optimistic user message on total failure
       setSessions((prev) =>
         prev.map((session) =>
           session.id === activeSessionId
             ? {
                 ...session,
-                messages: [...(session.messages || []), response.data.userMessage, response.data.assistantMessage],
+                messages: (session.messages || []).filter(
+                  (msg) => !msg.id.startsWith('optimistic-'),
+                ),
               }
             : session,
         ),
       );
-      setDraft('');
-    } catch (error: any) {
-      message.error(error.message || '发送消息失败');
+      setStreamingText('');
     } finally {
       setSending(false);
     }
@@ -164,12 +256,25 @@ const Chat = () => {
                 <h2 className="text-xl font-semibold text-white">{activeSession.title || 'New Chat'}</h2>
                 <div className="min-h-[320px] max-h-[420px] space-y-3 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4">
                   {activeSession.messages?.length ? activeSession.messages.map((item) => (
-                    <div key={item.id} className={`rounded-2xl px-4 py-3 text-sm leading-7 ${item.role === 'USER' ? 'ml-auto max-w-[85%] bg-annie-cyan/15 text-white' : 'mr-auto max-w-[85%] bg-white/[0.06] text-white/85'}`}>
+                    <div key={item.id} className={`rounded-2xl px-4 py-3 text-sm leading-7 ${item.role === 'USER' ? 'chat-message-user ml-auto max-w-[85%] bg-annie-cyan/15 text-white' : 'chat-message-assistant mr-auto max-w-[85%] bg-white/[0.06] text-white/85'}`}>
                       <div className="mb-1 text-xs opacity-60">{item.role === 'USER' ? '你' : 'Annie'}</div>
                       <div>{item.content}</div>
                     </div>
                   )) : (
                     <Empty description={<span className="text-white/72">还没有消息，发一条试试</span>} />
+                  )}
+                  {/* Streaming draft — renders while SSE chunks arrive */}
+                  {streamingText && (
+                    <div className="chat-message-assistant mr-auto max-w-[85%] rounded-2xl bg-white/[0.06] px-4 py-3 text-sm leading-7 text-white/85">
+                      <div className="mb-1 text-xs opacity-60">Annie</div>
+                      <div>{streamingText}</div>
+                    </div>
+                  )}
+                  {sending && !streamingText && (
+                    <div className="chat-message-assistant mr-auto max-w-[85%] rounded-2xl bg-white/[0.06] px-4 py-3 text-sm leading-7 text-white/50">
+                      <div className="mb-1 text-xs opacity-60">Annie</div>
+                      <div>正在回复...</div>
+                    </div>
                   )}
                   <div ref={messagesEndRef} />
                 </div>
