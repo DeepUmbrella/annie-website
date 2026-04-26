@@ -157,7 +157,11 @@ const Chat = () => {
           onError: (code, errMsg) => {
             const display = getErrorMessage(code, errMsg || '发送消息失败');
             message.error(display);
-            // Remove the placeholder assistant message and optimistic user message on error
+            // Always remove optimistic user message. Remove placeholder assistant
+            // message only when placeholderId is set (i.e. onStart fired before error).
+            // When placeholderId is null the error arrived before the SSE stream started
+            // (e.g. HTTP 4xx/5xx); in that case only the optimistic user message must be
+            // dropped so the UI stays clean.
             setSessions((prev) =>
               prev.map((session) =>
                 session.id === activeSessionId
@@ -165,8 +169,8 @@ const Chat = () => {
                       ...session,
                       messages: (session.messages || []).filter(
                         (msg) =>
-                          msg.id !== placeholderId &&
-                          !msg.id.startsWith('optimistic-'),
+                          !msg.id.startsWith('optimistic-') &&
+                          (placeholderId === null || msg.id !== placeholderId),
                       ),
                     }
                   : session,

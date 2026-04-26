@@ -86,11 +86,27 @@ test.describe('Chat streaming', () => {
     await page.waitForSelector('button:has-text("Busy Test")');
     await page.click('button:has-text("Busy Test")');
 
-    await page.getByPlaceholder('输入消息...').fill('hello');
+    // 3. Inject a conflict: send two messages in rapid succession on the same
+    //    session. The second will race the first and may hit session_busy.
+    //    Either way — HTTP error or SSE error — the assertions below hold.
+    const input = page.getByPlaceholder('输入消息...');
+    await input.fill('first message');
     await page.getByRole('button', { name: '发 送' }).click();
 
-    // If the backend returns a session_busy error, the UI should show an error
-    // and the streaming draft should be cleared. We just assert no crash.
-    await expect(page.getByPlaceholder('输入消息...')).toBeVisible();
+    // Immediately send a second message before the first stream finishes.
+    // The backend may reject this with session_busy or an HTTP error.
+    await input.fill('second message');
+    await page.getByRole('button', { name: '发 送' }).click();
+
+    // The input must remain visible and interactive (no crash, no frozen UI).
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+
+    // The "正在回复..." streaming placeholder must not be present after error.
+    await expect(page.locator('.chat-message-assistant', { hasText: '正在回复...' })).toHaveCount(0);
+
+    // An Ant Design error message should have been displayed (non-empty body).
+    const errorToast = page.locator('.ant-message-error');
+    await expect(errorToast).toBeVisible({ timeout: 5000 });
   });
 });
