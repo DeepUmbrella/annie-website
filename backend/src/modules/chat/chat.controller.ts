@@ -75,18 +75,29 @@ export class ChatController {
         res.flushHeaders();
 
         const destroy$ = new Subject<void>();
+        let subscription: Subscription | null = null;
+        let closed = false;
+        let finalizingDoneEvent = false;
+
+        const closeStream = () => {
+          if (closed) return;
+          closed = true;
+          clearTimeout(safetyTimeout);
+          destroy$.next();
+          destroy$.complete();
+          subscription?.unsubscribe();
+          this.bridgeService.endStream(sessionId);
+          if (!res.writableEnded) {
+            res.end();
+          }
+        };
 
         // 3. Safety fallback: force-close SSE if it hangs for any reason.
-        // Declared here so all termination paths can clear it.
         const safetyTimeout = setTimeout(() => {
           if (!res.writableEnded) {
             console.warn('[stream] safety timeout — forcing SSE close');
-            destroy$.next();
-            destroy$.complete();
-            subscription?.unsubscribe();
-            this.bridgeService.endStream(sessionId);
-            res.end();
           }
+          closeStream();
         }, 5000);
 
         // 4. Call bridge stream
@@ -96,8 +107,7 @@ export class ChatController {
           content: dto.message,
         });
 
-        // 4. Relay bridge events as SSE to the HTTP response
-        let subscription: Subscription | null = null;
+        // 5. Relay bridge events as SSE to the HTTP response
         subscription = stream$.pipe(takeUntil(destroy$)).subscribe({
           next: (event: BridgeStreamEvent) => {
             if (event.type === 'chunk') {
@@ -105,51 +115,47 @@ export class ChatController {
             } else if (event.type === 'start') {
               res.write(`event: start\ndata: ${JSON.stringify({ requestId: event.requestId })}\n\n`);
             } else if (event.type === 'done') {
-              // Finalize assistant message with accumulated text
-              this.chatService
+              finalizingDoneEvent = true;
+              // Finalize assistant message before closing the SSE response so
+              // persistence completes before test/app teardown.
+              void this.chatService
                 .finalizeAssistantMessage(assistantPlaceholder.id, userId, event.fullText)
-                .catch((err) => console.error('[stream] finalize failed:', err));
-              res.write(`event: done\ndata: ${JSON.stringify({ requestId: event.requestId, fullText: event.fullText })}\n\n`);
-              clearTimeout(safetyTimeout);
-              // Signal takeUntil BEFORE res.end() to avoid race with the close event.
-              destroy$.next();
-              res.end();
+                .then(() => {
+                  res.write(
+                    `event: done\ndata: ${JSON.stringify({ requestId: event.requestId, fullText: event.fullText })}\n\n`,
+                  );
+                  closeStream();
+                })
+                .catch((err) => {
+                  console.error('[stream] finalize failed:', err);
+                  closeStream();
+                })
+                .finally(() => {
+                  finalizingDoneEvent = false;
+                });
             }
           },
           error: (err: unknown) => {
-            clearTimeout(safetyTimeout);
             const bridgeErr = err as { type: 'error'; code: string; message: string };
             console.error('[stream] bridge error:', err);
             res.write(
               `event: error\ndata: ${JSON.stringify({ code: bridgeErr.code, message: bridgeErr.message })}\n\n`,
             );
-            // Signal takeUntil BEFORE res.end() to avoid race with the close event.
-            destroy$.next();
-            res.end();
+            closeStream();
           },
           complete: () => {
             // Observable completed — always close the SSE stream.
-            // This handles the case where frames complete without a "done" event.
-            console.log('[DEBUG complete handler] fired!');
-            clearTimeout(safetyTimeout);
-            destroy$.next();
-            if (!res.writableEnded) {
-              console.log('[DEBUG complete handler] calling res.end()');
-              res.end();
+            // If a done event is still being finalized, let that path close it.
+            if (finalizingDoneEvent) {
+              return;
             }
+            closeStream();
           },
         });
 
-        // 5. Clean up if client disconnects
+        // 6. Clean up if client disconnects
         res.on('close', () => {
-          clearTimeout(safetyTimeout);
-          this.bridgeService.endStream(sessionId);
-          // Signal takeUntil to unsubscribe from the bridge stream.
-          destroy$.next();
-          destroy$.complete();
-          // Also explicitly unsubscribe to ensure cleanup even if takeUntil
-          // has already been unsubscribed by another path.
-          subscription?.unsubscribe();
+          closeStream();
         });
       })
       .catch((err) => {
