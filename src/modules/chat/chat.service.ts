@@ -5,29 +5,85 @@ import { PrismaService } from '../../common/database/prisma.service';
 export class ChatService {
   constructor(private prisma: PrismaService) {}
 
-  async sendMessage(sessionId: string, userId: string, content: string) {
-    // TODO: Implement Annie AI integration
-    const message = await this.prisma.message.create({
+  async assertSessionOwnership(sessionId: string, userId: string): Promise<void> {
+    const session = await this.prisma.chatSession.findUnique({
+      where: { id: sessionId },
+      select: { userId: true },
+    });
+    if (!session || session.userId !== userId) {
+      throw new Error('无权访问此会话');
+    }
+  }
+
+  async createUserMessage(sessionId: string, userId: string, content: string) {
+    await this.assertSessionOwnership(sessionId, userId);
+    return this.prisma.message.create({
       data: {
         sessionId,
         role: 'USER',
         content,
       },
     });
+  }
 
-    // Simulate Annie response
-    const assistantMessage = await this.prisma.message.create({
+  async createAssistantPlaceholder(sessionId: string) {
+    return this.prisma.message.create({
       data: {
         sessionId,
         role: 'ASSISTANT',
-        content: '这是 Annie 的回复（待集成真实 AI 服务）',
+        content: '',
       },
     });
+  }
 
+  async finalizeAssistantMessage(messageId: string, userId: string, content: string) {
+    // Fetch message with its session to verify ownership
+    const message = await this.prisma.message.findUnique({
+      where: { id: messageId },
+      include: { session: { select: { userId: true } } },
+    });
+
+    if (!message) {
+      throw new Error('Message not found');
+    }
+
+    if (message.role !== 'ASSISTANT') {
+      throw new Error('Only assistant messages can be finalized');
+    }
+
+    if (message.session.userId !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    return this.prisma.message.update({
+      where: { id: messageId },
+      data: { content },
+    });
+  }
+
+  async sendMessage(sessionId: string, userId: string, content: string) {
+    const userMsg = await this.createUserMessage(sessionId, userId, content);
+    const assistantPlaceholder = await this.createAssistantPlaceholder(sessionId);
     return {
-      userMessage: message,
-      assistantMessage: assistantMessage,
+      userMessage: userMsg,
+      assistantPlaceholder,
     };
+  }
+
+  /**
+   * Persists user message + assistant placeholder and returns them.
+   * Used by the streaming endpoint so both messages are committed before
+   * the SSE response begins.
+   */
+  async writeStreamMessages(sessionId: string, userId: string, content: string) {
+    await this.assertSessionOwnership(sessionId, userId);
+    const userMsg = await this.prisma.message.create({
+      data: { sessionId, role: 'USER', content },
+    });
+    const assistantPlaceholder = await this.prisma.message.create({
+      data: { sessionId, role: 'ASSISTANT', content: '' },
+    });
+    return { userMessage: userMsg, assistantPlaceholder };
   }
 
   async getSessions(userId: string) {
