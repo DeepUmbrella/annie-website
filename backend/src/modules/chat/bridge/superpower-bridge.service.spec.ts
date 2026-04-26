@@ -260,6 +260,35 @@ describe('SuperpowerBridgeService — Task 5', () => {
   // stream() — busy guard
   // ─────────────────────────────────────────────────────────────────────────
   describe('busy guard', () => {
+    it('should open a dedicated session on first real stream and relay its frames', async () => {
+      const events: BridgeStreamEvent[] = [];
+      const sendMessageStream = jest.fn().mockReturnValue(
+        makeFrameGen([
+          { type: 'start', requestId: 'req-live' },
+          { type: 'text', text: 'Hello' },
+          { type: 'done' },
+        ])(),
+      );
+
+      mockGatewayClient.openSession = jest.fn().mockResolvedValue({
+        sessionId: 'session-live-1',
+        sendMessageStream,
+      });
+
+      await new Promise<void>((resolve, reject) => {
+        service.stream({ sessionKey: 's-real', userId: 'u1', content: 'hello' }).subscribe({
+          next: (event) => events.push(event),
+          complete: () => resolve(),
+          error: (err) => reject(err),
+        });
+      });
+
+      expect(mockGatewayClient.openSession).toHaveBeenCalledWith(mockConfig, 's-real');
+      expect(sendMessageStream).toHaveBeenCalledWith('hello');
+      expect(events.map((event) => event.type)).toEqual(['start', 'chunk', 'done']);
+      expect((events[2] as any).fullText).toBe('Hello');
+    });
+
     it('should emit session_busy error for a concurrent stream on the same sessionKey', (done) => {
       service
         .stream({ sessionKey: 's1', userId: 'u1', content: 'hello' })

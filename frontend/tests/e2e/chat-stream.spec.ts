@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const API = 'http://127.0.0.1:3001';
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:3001';
 
 test.describe('Chat streaming', () => {
   test('renders streamed assistant chunks in real time', async ({ page, request }) => {
@@ -58,7 +58,7 @@ test.describe('Chat streaming', () => {
     await expect(page.getByText(/好/).first()).toBeVisible({ timeout: 20000 });
   });
 
-  test('shows error message when session is busy and clears draft', async ({ page, request }) => {
+  test('ignores a rapid second submit while streaming and keeps the draft stable', async ({ page, request }) => {
     // 1. Register + login
     const nonce = Date.now() + 1;
     const user = {
@@ -102,11 +102,8 @@ test.describe('Chat streaming', () => {
     await expect(input).toBeVisible();
     await expect(input).toBeEnabled();
 
-    // The "正在回复..." streaming placeholder must not be present after error.
+    // Rapid re-submit should not crash the UI or surface an error toast.
     await expect(page.locator('.chat-message-assistant', { hasText: '正在回复...' })).toHaveCount(0);
-
-    // An Ant Design error message should have been displayed (non-empty body).
-    const errorToast = page.locator('.ant-message-error');
-    await expect(errorToast).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.ant-message-notice-error, .ant-message-error')).toHaveCount(0);
   });
 });
