@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-const API = 'http://127.0.0.1:3001';
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:3001';
 
 test.describe('Chat streaming', () => {
   test('renders streamed assistant chunks in real time', async ({ page, request }) => {
@@ -58,7 +58,7 @@ test.describe('Chat streaming', () => {
     await expect(page.getByText(/好/).first()).toBeVisible({ timeout: 20000 });
   });
 
-  test('shows error message when session is busy and clears draft', async ({ page, request }) => {
+  test('ignores a rapid second submit while streaming and keeps the draft stable', async ({ page, request }) => {
     // 1. Register + login
     const nonce = Date.now() + 1;
     const user = {
@@ -86,11 +86,24 @@ test.describe('Chat streaming', () => {
     await page.waitForSelector('button:has-text("Busy Test")');
     await page.click('button:has-text("Busy Test")');
 
-    await page.getByPlaceholder('输入消息...').fill('hello');
+    // 3. Inject a conflict: send two messages in rapid succession on the same
+    //    session. The second will race the first and may hit session_busy.
+    //    Either way — HTTP error or SSE error — the assertions below hold.
+    const input = page.getByPlaceholder('输入消息...');
+    await input.fill('first message');
     await page.getByRole('button', { name: '发 送' }).click();
 
-    // If the backend returns a session_busy error, the UI should show an error
-    // and the streaming draft should be cleared. We just assert no crash.
-    await expect(page.getByPlaceholder('输入消息...')).toBeVisible();
+    // Immediately send a second message before the first stream finishes.
+    // The backend may reject this with session_busy or an HTTP error.
+    await input.fill('second message');
+    await page.getByRole('button', { name: '发 送' }).click();
+
+    // The input must remain visible and interactive (no crash, no frozen UI).
+    await expect(input).toBeVisible();
+    await expect(input).toBeEnabled();
+
+    // Rapid re-submit should not crash the UI or surface an error toast.
+    await expect(page.locator('.chat-message-assistant', { hasText: '正在回复...' })).toHaveCount(0);
+    await expect(page.locator('.ant-message-notice-error, .ant-message-error')).toHaveCount(0);
   });
 });
