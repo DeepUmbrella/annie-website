@@ -1,5 +1,6 @@
-import { Injectable, OnModuleDestroy, Logger, Inject, Optional } from '@nestjs/common';
-import { Observable, Subject, Subscription, timer, NEVER } from 'rxjs';
+import { Injectable, OnModuleDestroy, OnModuleInit, Logger, Inject, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Observable, Subject, Subscription, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   BridgeStreamEvent,
@@ -56,7 +57,7 @@ export const SESSION_STATE_STORE = 'SESSION_STATE_STORE';
  * the session-lifecycle logic.
  */
 @Injectable()
-export class SuperpowerBridgeService implements OnModuleDestroy {
+export class SuperpowerBridgeService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(SuperpowerBridgeService.name);
 
   private config: SuperpowerGatewayConfig | null = null;
@@ -85,6 +86,8 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
     @Inject(GATEWAY_CLIENT)
     @Optional()
     private readonly gatewayClient?: GatewayClient,
+    @Optional()
+    private readonly configService?: ConfigService,
   ) {}
 
   /**
@@ -95,6 +98,25 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
     this.logger.log(
       `Initialized for gateway ${config.url}, agent=${config.targetAgent}, stateFile=${config.stateFilePath}`,
     );
+  }
+
+  onModuleInit(): void {
+    if (this.config || !this.configService) {
+      return;
+    }
+    this.initialize({
+      url: this.configService.get<string>('gateway.url') ?? 'ws://127.0.0.1:18789/ws',
+      token: this.configService.get<string>('gateway.token'),
+      targetAgent: this.configService.get<string>('superpowerChat.targetAgent') ?? 'superpower',
+      sessionLabel:
+        this.configService.get<string>('superpowerChat.sessionLabel') ?? 'annie-chat-runtime',
+      stateFilePath:
+        this.configService.get<string>('superpowerChat.stateFilePath') ??
+        '.runtime/superpower-chat-session.json',
+      firstChunkTimeoutMs:
+        this.configService.get<number>('superpowerChat.firstChunkTimeoutMs') ?? 15000,
+      idleTimeoutMs: this.configService.get<number>('superpowerChat.idleTimeoutMs') ?? 45000,
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -190,21 +212,6 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
     const sessionKeyCaptured = sessionKey;
     const config = this.config;
 
-    // If a frameGenerator is supplied (tests), use it directly.
-    // Otherwise fall back to NEVER — the real path calls ensureDedicatedSession
-    // synchronously from the Observable constructor, which is intentional so any
-    // session acquisition error surfaces as a stream error (not a thrown error).
-    let rawFrames$: Observable<RawFrame>;
-    if (options?.frameGenerator) {
-      rawFrames$ = options.frameGenerator();
-    } else if (this.gatewayClient && this.activeSessions.has(sessionKey)) {
-      // Re-use the already-open session without re-creating it.
-      rawFrames$ = this.activeSessions.get(sessionKey)!.sendMessageStream(content);
-    } else {
-      // No active session and no frameGenerator — use NEVER so the timeout fires.
-      rawFrames$ = NEVER;
-    }
-
     // A Subject that emits exactly one 'complete' when the stream ends so the
     // takeUntil chain can clean up the busy slot at the right moment.
     const endOfStream$ = new Subject<void>();
@@ -213,11 +220,13 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
       let accumulatedText = '';
       let completed = false;
       let timeoutTimerSub: Subscription | null = null;
+      let frameSub: Subscription | null = null;
 
       const cleanup = () => {
         if (completed) return;
         completed = true;
         timeoutTimerSub?.unsubscribe();
+        frameSub?.unsubscribe();
         this._releaseSession(sessionKeyCaptured);
         endOfStream$.next();
         endOfStream$.complete();
@@ -239,69 +248,94 @@ export class SuperpowerBridgeService implements OnModuleDestroy {
           },
         });
 
-      // ── Frame processing pipeline ─────────────────────────────────────────
-      const sub = rawFrames$
-        .pipe(takeUntil(endOfStream$), takeUntil(this.destroy$))
-        .subscribe({
-          next: (frame) => {
+      // ── Lazily acquire a session then subscribe to frames ─────────────────
+      // This deferred pattern ensures the timeout fires only if the Gateway
+      // itself is slow — not merely because no session has been created yet.
+      const subscribeToFrames = async () => {
+        try {
+          let frames$: Observable<RawFrame>;
+
+          if (options?.frameGenerator) {
+            frames$ = options.frameGenerator();
+          } else if (this.activeSessions.has(sessionKey)) {
+            frames$ = this.activeSessions.get(sessionKey)!.sendMessageStream(content);
+          } else {
+            // No active session — create one on-demand.
+            const result = await this.ensureDedicatedSession(sessionKey);
             if (completed) return;
-            switch (frame.type) {
-              case 'start':
-                timeoutTimerSub?.unsubscribe();
-                observer.next({ type: 'start', requestId });
-                break;
-              case 'text':
-                timeoutTimerSub?.unsubscribe();
-                accumulatedText += frame.text;
-                observer.next({ type: 'chunk', requestId, text: frame.text });
-                break;
-              case 'done':
-                cleanup();
-                observer.next({ type: 'done', requestId, fullText: accumulatedText });
-                observer.complete();
-                break;
-              case 'error': {
-                cleanup();
-                const knownCodes = ['service_unavailable', 'session_busy', 'timeout', 'upstream_error'];
-                const code =
-                  knownCodes.includes(frame.code)
-                    ? frame.code
-                    : 'upstream_error';
-                observer.error({
-                  type: 'error',
-                  requestId,
-                  code,
-                  message: frame.message,
-                });
-                break;
-              }
-              default: {
+            frames$ = result.sendMessageStream(content);
+          }
+
+          if (completed) return;
+
+          frameSub = frames$
+            .pipe(takeUntil(endOfStream$), takeUntil(this.destroy$))
+            .subscribe({
+              next: (frame) => {
+                if (completed) return;
+                switch (frame.type) {
+                  case 'start':
+                    timeoutTimerSub?.unsubscribe();
+                    observer.next({ type: 'start', requestId });
+                    break;
+                  case 'text':
+                    timeoutTimerSub?.unsubscribe();
+                    accumulatedText += frame.text;
+                    observer.next({ type: 'chunk', requestId, text: frame.text });
+                    break;
+                  case 'done':
+                    cleanup();
+                    observer.next({ type: 'done', requestId, fullText: accumulatedText });
+                    observer.complete();
+                    break;
+                  case 'error': {
+                    cleanup();
+                    const knownCodes = ['service_unavailable', 'session_busy', 'timeout', 'upstream_error'];
+                    const code = knownCodes.includes(frame.code) ? frame.code : 'upstream_error';
+                    observer.error({ type: 'error', requestId, code, message: frame.message });
+                    break;
+                  }
+                  default:
+                    cleanup();
+                    observer.error({
+                      type: 'error',
+                      requestId,
+                      code: 'upstream_error' as const,
+                      message: `Unknown raw frame: ${JSON.stringify(frame)}`,
+                    });
+                }
+              },
+              error: (err) => {
+                if (completed) return;
                 cleanup();
                 observer.error({
                   type: 'error',
                   requestId,
                   code: 'upstream_error' as const,
-                  message: `Unknown raw frame: ${JSON.stringify(frame)}`,
+                  message: err?.message ?? String(err),
                 });
-              }
-            }
-          },
-          error: (err) => {
-            if (completed) return;
-            cleanup();
-            observer.error({
-              type: 'error',
-              requestId,
-              code: 'upstream_error' as const,
-              message: err?.message ?? String(err),
+              },
+              complete: () => {
+                if (completed) return;
+                cleanup();
+                observer.complete();
+              },
             });
-          },
-        });
-
-      return () => {
-        sub.unsubscribe();
-        cleanup();
+        } catch (err) {
+          if (completed) return;
+          cleanup();
+          observer.error({
+            type: 'error',
+            requestId,
+            code: 'service_unavailable' as const,
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
       };
+
+      void subscribeToFrames();
+
+      return cleanup;
     });
   }
 
