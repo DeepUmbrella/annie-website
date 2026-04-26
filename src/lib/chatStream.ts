@@ -64,48 +64,93 @@ export function streamChatMessage(
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let buffer = '';
+      let sawStart = false;
+      let syntheticRequestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        while (true) {
+          let value: Uint8Array | undefined;
+          let done = false;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        // Keep the potentially incomplete last line in the buffer
-        buffer = lines.pop() ?? '';
-
-        for (const line of lines) {
-          if (line.startsWith('event:')) {
-            const eventType = line.slice(6).trim();
-            void eventType; // consumed together with the next data: line
+          try {
+            ({ done, value } = await reader.read());
+          } catch (readErr) {
+            // Network interruption, peer reset, etc. — treat as upstream error
+            callbacks.onError?.('upstream_error', (readErr as Error).message ?? 'Stream read failed');
+            break;
           }
-          if (line.startsWith('data:')) {
-            const dataStr = line.slice(5).trim();
-            if (!dataStr) continue;
 
-            let event: StreamEvent;
-            try {
-              event = JSON.parse(dataStr) as StreamEvent;
-            } catch {
-              continue;
-            }
+          if (done) break;
+          if (!value) continue;
 
-            switch (event.type) {
-              case 'start':
-                callbacks.onStart?.(event.requestId);
-                break;
-              case 'chunk':
-                callbacks.onChunk?.(event.text);
-                break;
-              case 'done':
-                callbacks.onDone?.(event.fullText);
-                break;
-              case 'error':
-                callbacks.onError?.(event.code, event.message);
-                break;
+          buffer += decoder.decode(value, { stream: true });
+
+          // Split on SSE line boundary; keep the (possibly incomplete) last segment
+          const segments = buffer.split(/\n\n/);
+          buffer = segments.pop() ?? '';
+
+          for (const segment of segments) {
+            const lines = segment.split('\n');
+            let eventName = '';
+            for (const line of lines) {
+              if (line.startsWith('event:')) {
+                eventName = line.slice(6).trim();
+                continue;
+              }
+
+              if (!line.startsWith('data:')) continue;
+
+              const dataStr = line.slice(5).trim();
+              if (!dataStr) continue;
+
+              let parsed: any;
+              try {
+                parsed = JSON.parse(dataStr);
+              } catch {
+                continue;
+              }
+
+              const type: string = parsed?.type ?? (eventName === 'chunk' ? 'chunk' : eventName === 'done' ? 'done' : eventName === 'error' ? 'error' : '');
+
+              if (type === 'start') {
+                sawStart = true;
+                callbacks.onStart?.(parsed.requestId ?? syntheticRequestId);
+                continue;
+              }
+
+              if (type === 'chunk') {
+                if (!sawStart) {
+                  sawStart = true;
+                  callbacks.onStart?.(parsed.requestId ?? syntheticRequestId);
+                }
+                const text = typeof parsed.text === 'string'
+                  ? parsed.text
+                  : typeof parsed.message?.content?.[0]?.text === 'string'
+                    ? parsed.message.content[0].text
+                    : '';
+                if (text) callbacks.onChunk?.(text);
+                continue;
+              }
+
+              if (type === 'done') {
+                const fullText = typeof parsed.fullText === 'string'
+                  ? parsed.fullText
+                  : typeof parsed.message?.content?.[0]?.text === 'string'
+                    ? parsed.message.content[0].text
+                    : '';
+                callbacks.onDone?.(fullText);
+                continue;
+              }
+
+              if (type === 'error') {
+                callbacks.onError?.(parsed.code ?? 'upstream_error', parsed.message ?? 'upstream error');
+              }
             }
           }
         }
+      } finally {
+        // Ensure reader is always released, even if an unhandled branch exits
+        reader.releaseLock();
       }
     })
     .catch((err: Error) => {
