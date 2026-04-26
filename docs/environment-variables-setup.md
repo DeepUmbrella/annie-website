@@ -78,6 +78,14 @@ CORS_ORIGIN=https://your-domain.com
 
 ANNIE_API_URL=https://annie-api.your-domain.com
 ANNIE_API_KEY=your-annie-api-key
+
+OPENCLAW_GATEWAY_URL=ws://127.0.0.1:18789/ws
+OPENCLAW_GATEWAY_TOKEN=your-openclaw-gateway-token
+OPENCLAW_SUPERPOWER_AGENT=superpower
+OPENCLAW_SUPERPOWER_SESSION_LABEL=annie-chat-runtime
+OPENCLAW_SUPERPOWER_STATE_FILE=.runtime/superpower-chat-session.json
+OPENCLAW_SUPERPOWER_FIRST_CHUNK_TIMEOUT_MS=15000
+OPENCLAW_SUPERPOWER_IDLE_TIMEOUT_MS=45000
 ```
 
 说明：
@@ -85,6 +93,22 @@ ANNIE_API_KEY=your-annie-api-key
 - `MEILI_MASTER_KEY` 主要给 MeiliSearch 容器使用
 - `MEILISEARCH_MASTER_KEY` 给后端应用使用
 - 这两个值在本项目里应保持一致
+
+### 2.1 OpenClaw Superpower Chat Bridge
+
+以下环境变量用于配置后端 chat 模块与 OpenClaw Gateway 之间的 superpower 专用 session 桥接服务。
+
+| 变量名 | 默认值 | 说明 |
+|---|---|---|
+| `OPENCLAW_GATEWAY_URL` | `ws://127.0.0.1:18789/ws` | OpenClaw Gateway WebSocket 地址 |
+| `OPENCLAW_GATEWAY_TOKEN` | （无） | Gateway 鉴权 token，必填 |
+| `OPENCLAW_SUPERPOWER_AGENT` | `superpower` | 专用 session 绑定的目标 agent 名称 |
+| `OPENCLAW_SUPERPOWER_SESSION_LABEL` | `annie-chat-runtime` | 专用 session 的标签，bridge 据此查找或创建 session |
+| `OPENCLAW_SUPERPOWER_STATE_FILE` | `.runtime/superpower-chat-session.json` | 专用 session 状态文件路径（后端本地文件） |
+| `OPENCLAW_SUPERPOWER_FIRST_CHUNK_TIMEOUT_MS` | `15000` | 等待上游首块响应的超时（毫秒） |
+| `OPENCLAW_SUPERPOWER_IDLE_TIMEOUT_MS` | `45000` | 空闲超时（毫秒），超时后关闭 session |
+
+本地开发场景下，Gateway 通常在本机运行，使用默认值即可。生产环境请根据实际 Gateway 部署地址调整 `OPENCLAW_GATEWAY_URL` 和 `OPENCLAW_GATEWAY_TOKEN`。
 
 ## 三种常见场景
 
