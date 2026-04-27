@@ -269,7 +269,7 @@ EOF
     sleep 30
 
     # Check backend health
-    if ! check_service_health "Backend" "http://$SSH_HOST:${BACKEND_PORT:-3001}/health"; then
+    if ! check_service_health "Backend" "http://$SSH_HOST:${BACKEND_PORT:-3001}/api/v1/health"; then
         log_error "Backend health check failed"
         exit 1
     fi
