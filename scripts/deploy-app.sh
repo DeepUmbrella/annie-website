@@ -63,16 +63,30 @@ TMP_ROOT_ENV="$(mktemp)"
 TMP_BACKEND_ENV="$(mktemp)"
 
 # Health check function
+# use_ssh=false 时走外部 URL 检查，use_ssh=true 时通过 SSH 在服务器内部用 127.0.0.1 检查
 check_service_health() {
     local service_name=$1
     local url=$2
+    local use_ssh=${3:-false}
     local max_attempts=30
     local attempt=1
 
     log_info "Checking $service_name health at $url..."
 
     while [ $attempt -le $max_attempts ]; do
-        if curl -f --max-time 10 "$url" >/dev/null 2>&1; then
+        local ok=false
+        if [ "$use_ssh" = "true" ]; then
+            # 通过 SSH 在服务器内部检查（使用 127.0.0.1）
+            if ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "curl -f --max-time 10 '$url'" >/dev/null 2>&1; then
+                ok=true
+            fi
+        else
+            if curl -f --max-time 10 "$url" >/dev/null 2>&1; then
+                ok=true
+            fi
+        fi
+
+        if [ "$ok" = "true" ]; then
             log_info "$service_name is healthy"
             return 0
         fi
@@ -218,7 +232,7 @@ EOF
         wait
 
         cd $REMOTE_DIR
-        \$COMPOSE_BIN up -d --build
+        \$COMPOSE_BIN up -d --build --remove-orphans
     "; then
         log_error "Failed to start services"
         rollback
@@ -268,14 +282,14 @@ EOF
     # Wait a bit for services to fully start
     sleep 30
 
-    # Check backend health
-    if ! check_service_health "Backend" "http://$SSH_HOST:${BACKEND_PORT:-3001}/api/v1/health"; then
+    # Check backend health (via SSH, internal 127.0.0.1)
+    if ! check_service_health "Backend" "http://127.0.0.1:3000/api/v1/health" true; then
         log_error "Backend health check failed"
         exit 1
     fi
 
-    # Check frontend health
-    if ! check_service_health "Frontend" "http://$SSH_HOST/health"; then
+    # Check frontend health (via SSH, internal 127.0.0.1)
+    if ! check_service_health "Frontend" "http://127.0.0.1/health" true; then
         log_error "Frontend health check failed"
         exit 1
     fi
