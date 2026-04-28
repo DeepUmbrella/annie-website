@@ -58,7 +58,7 @@ const Footer = () => {
             </li>
           </ul>
           <p className="mt-6 text-xs">
-            个人AI开发笔记 © 2024
+            个人AI开发笔记 © {new Date().getFullYear()}
           </p>
         </div>
       </div>
