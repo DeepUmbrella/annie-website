@@ -9,49 +9,49 @@ const Features = () => {
     {
       icon: '🤖',
       title: '智能对话',
-      description: '与 Annie 进行自然流畅的对话，获得智能、有用的回答。支持多轮对话，保持上下文连贯性。',
+      description: '记录 AI 对话系统的开发实践，包括对话设计、流式输出与上下文管理。',
       items: ['自然语言理解', '上下文记忆', '流式响应', '多轮对话'],
     },
     {
       icon: '📝',
       title: '任务管理',
-      description: 'Annie 帮助你规划、追踪和管理任务，让工作更有条理。支持任务优先级、截止日期和提醒功能。',
+      description: '整理 AI 任务编排与工作流自动化的开发经验，包括任务创建、调度与执行。',
       items: ['任务创建和编辑', '优先级设置', '截止日期追踪', '智能提醒'],
     },
     {
       icon: '🧠',
       title: '知识学习',
-      description: 'Annie 会持续学习你的偏好和习惯，随着使用越来越懂你。个性化的服务体验，让沟通更高效。',
+      description: '记录 AI 持续学习和个性化适应的技术方案，包括知识存储与检索。',
       items: ['偏好学习', '习惯追踪', '个性化推荐', '智能预测'],
     },
     {
       icon: '🔒',
       title: '安全可靠',
-      description: '你的数据安全是我们的首要任务。采用企业级加密标准，确保你的对话和个人信息得到妥善保护。',
+      description: '整理 AI 安全、权限控制与合规开发的技术笔记，包括数据保护与访问控制。',
       items: ['端到端加密', '数据隔离', '安全认证', '隐私保护'],
     },
     {
       icon: '🔌',
       title: '自动化工作流',
-      description: '将 Annie 与你的常用工具连接，自动化重复任务。通过 webhook 和 API 集成打造专属工作流。',
+      description: '探索 AI 工作流编排与自动化执行的技术实现，包括任务调度与监控。',
       items: ['Webhook 集成', 'API 访问', '第三方连接', '自定义触发器'],
     },
     {
       icon: '📚',
       title: '知识库管理',
-      description: '构建你的个人知识库，让 Annie 基于你的文档和数据进行回答。支持多种格式和智能检索。',
+      description: '记录 AI 知识库构建与检索增强的技术实践，包括向量检索与 RAG。',
       items: ['文档上传', '智能检索', '知识图谱', 'RAG 检索增强'],
     },
     {
       icon: '🌐',
       title: '团队协作',
-      description: '与团队成员共享 AI 能力，统一团队知识标准。支持权限管理和协作编辑。',
+      description: '整理多用户 AI 协作与共享的技术方案，包括权限管理与知识共享。',
       items: ['团队空间', '权限控制', '知识共享', '协作面板'],
     },
     {
       icon: '⚡',
       title: '高性能引擎',
-      description: '基于最新的大语言模型技术，提供快速响应和准确答案。支持流式输出和长上下文。',
+      description: '记录 AI 模型调用优化与性能调优的技术笔记，包括缓存与负载均衡。',
       items: ['流式响应', '长上下文', '多模型支持', '智能路由'],
     },
   ];
@@ -59,12 +59,12 @@ const Features = () => {
   return (
     <div>
       <PageHero
-        eyebrow="Features"
-        title="欢迎广大网友"
-        description="从对话、知识到自动化与接入能力，Annie 将 AI 能力整合为一个连续的产品体验。"
+        eyebrow="博客"
+        title="开发笔记与技术分享"
+        description="记录 AI 开发中的技术细节、工具使用与经验总结。"
         actions={
           <>
-            <ButtonLink to="/register">立即体验</ButtonLink>
+            <ButtonLink to="/blog">阅读笔记</ButtonLink>
             <ButtonLink to="/docs" variant="secondary">查看文档</ButtonLink>
           </>
         }
@@ -98,11 +98,11 @@ const Features = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">准备好开始了吗？</h2>
+          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">开始阅读笔记</h2>
           <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
-            立即注册 Annie，开启你的 AI 助力之旅。免费开始，无需信用卡。
+            浏览 AI 开发技术笔记，开启学习之旅。
           </p>
-          <ButtonLink to="/register">免费注册</ButtonLink>
+          <ButtonLink to="/blog">阅读更多</ButtonLink>
         </GlassCard>
       </Section>
     </div>
