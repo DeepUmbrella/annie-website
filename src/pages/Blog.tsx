@@ -57,7 +57,7 @@ const Blog = () => {
             <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">
               最新文章
             </h2>
-            <span className="text-sm text-white/55">{posts.length} 篇</span>
+            <span className="text-sm text-white/55">{(posts || []).length} 篇</span>
           </div>
 
           {loading ? (
@@ -105,9 +105,9 @@ const Blog = () => {
                 </GlassCard>
               </div>
 
-              {posts.length > 1 && (
+              {(posts || []).length > 1 && (
                 <div className="grid gap-4 md:grid-cols-2">
-                  {posts.slice(1).map((post) => (
+                  {(posts || []).slice(1).map((post) => (
                     <GlassCard key={post.id} className="p-6">
                       <Link to={`/blog/${post.slug}`}>
                         <h4 className="mb-3 text-xl font-semibold text-white hover:text-annie-cyan transition-colors">
