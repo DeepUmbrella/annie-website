@@ -27,9 +27,9 @@ const Contact = () => {
   return (
     <div>
       <PageHero
-        eyebrow="Contact"
-        title="与 Annie 团队取得联系"
-        description="无论是产品咨询、技术问题还是合作意向，我们随时准备帮助你。"
+        eyebrow="联系"
+        title="关于本站"
+        description="记录 AI 开发过程中的问题和心得，欢迎交流。"
       />
 
       <Section>
@@ -41,9 +41,8 @@ const Contact = () => {
                 size="small"
                 split={false}
                 dataSource={[
-                  { icon: '📧', label: '邮箱', value: 'support@annie.ai' },
-                  { icon: '🌐', label: '网站', value: 'https://annie.ai' },
-                  { icon: '💬', label: '社区', value: 'https://community.annie.ai' },
+                  { icon: '📧', label: '邮箱', value: 'linany@linany.com' },
+                  { icon: '🌐', label: '网站', value: 'https://www.linany.com' },
                 ]}
                 renderItem={item => (
                   <List.Item className="[&>div]:mb-4">
@@ -138,9 +137,9 @@ const Contact = () => {
 
       <Section className="bg-gradient-to-b from-transparent to-white/[0.02]">
         <GlassCard className="mx-auto max-w-4xl p-8 md:p-12 text-center">
-          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">需要更多帮助？</h2>
+          <h2 className="mb-4 text-[2rem] font-semibold tracking-[-0.02em] text-white md:text-[2.5rem] lg:text-[3rem]">有问题或建议？</h2>
           <p className="mb-8 text-base leading-8 text-white/72 md:text-lg">
-            查看我们的文档和常见问题，或者加入社区获取更多支持。
+            欢迎通过上方方式联系，或浏览博客获取更多信息。
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <ButtonLink to="/docs">查看文档</ButtonLink>
