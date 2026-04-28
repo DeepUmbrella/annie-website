@@ -5,26 +5,26 @@ const minimaxLink = 'https://platform.minimaxi.com/subscribe/token-plan?code=H74
 
 const Home = () => {
   const capabilities = [
-    { title: '智能对话', description: '用自然语言完成问答、协作与信息整合。' },
-    { title: '知识检索', description: '连接文档、资料与上下文，让回答更可靠。' },
-    { title: '自动化工作流', description: '把重复工作交给 Annie 编排与执行。' },
-    { title: '开发者接入', description: '通过 API 和工具能力把 AI 接进你的产品。' },
-    { title: '多端协作', description: '在不同入口之间保持一致的使用体验。' },
-    { title: '可控与安全', description: '在权限、边界与行为上保持清晰可控。' },
+    { title: '智能对话', description: '记录 AI 对话系统的开发实践与优化经验。' },
+    { title: '知识检索', description: '整理 AI 知识库、RAG 与向量检索的技术笔记。' },
+    { title: '自动化工作流', description: '探索 AI 工作流编排、任务自动化的开发心得。' },
+    { title: '开发者接入', description: '分享 API 设计、SDK 集成与开发者工具的经验。' },
+    { title: '多端协作', description: '记录在不同平台上接入 AI 能力的开发过程。' },
+    { title: '可控与安全', description: '整理 AI 安全、权限控制与合规开发的技术笔记。' },
   ];
 
   const scenarios = [
     {
-      title: '个人效率助手',
-      description: '从日程管理到信息整理，让 Annie 成为你日常工作的得力伙伴，节省时间并提升效率。',
+      title: '开发笔记',
+      description: '记录 AI 开发过程中的技术细节、踩坑心得与解决方案，从实践中积累经验。',
     },
     {
-      title: '团队协作中枢',
-      description: '统一团队的 AI 交互方式，共享知识库与工作流，让协作更顺畅，知识流动更自然。',
+      title: '工具探索',
+      description: '整理 AI 相关工具、平台和 SDK 的使用心得，帮助快速上手。',
     },
     {
-      title: '开发者 AI 接入层',
-      description: '通过清晰的 API 与工具扩展，将 Annie 的能力无缝集成到你的应用中，快速构建 AI 原型。',
+      title: '技术分享',
+      description: '将开发过程中的所学所得整理成文，与社区共享技术成长。',
     },
   ];
 
@@ -38,20 +38,20 @@ const Home = () => {
         <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-8">
             <span className="inline-flex rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs uppercase tracking-[0.2em] text-annie-cyan">
-              AI Assistant Platform
+              个人AI开发笔记
             </span>
             <div className="space-y-4">
               <h1 className="max-w-4xl text-[2.75rem] font-semibold leading-[1.1] tracking-[-0.02em] text-white md:text-[3.5rem] lg:text-[4.5rem] xl:text-[5rem]">
-                让 <span className="bg-gradient-to-r from-white via-annie-lavender to-annie-cyan bg-clip-text text-transparent">Annie</span>
+                记录 AI 开发
                 <br />
-                成为你的智能协作中枢
+                从这里开始
               </h1>
               <p className="max-w-2xl text-base leading-7 text-white/68 md:text-lg">
-                连接知识、对话与自动化能力，为个人、团队与开发者提供统一的 AI 工作入口。
+                个人AI开发笔记，分享智能体开发的技术与心得。
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-4 pt-2">
-              <ButtonLink to="/register">立即体验</ButtonLink>
+              <ButtonLink to="/blog">阅读笔记</ButtonLink>
               <ButtonLink to="/docs" variant="secondary">
                 查看文档
               </ButtonLink>
@@ -151,8 +151,8 @@ const Home = () => {
                   <span className="text-annie-cyan">⚡</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">响应速度</p>
-                  <p className="text-xs text-white/60">平均延迟 &lt;200ms</p>
+                  <p className="text-sm font-medium text-white">开发日志</p>
+                  <p className="text-xs text-white/60">持续更新中</p>
                 </div>
               </div>
             </div>
@@ -164,8 +164,8 @@ const Home = () => {
                   <span className="text-annie-lavender">📚</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">知识接入</p>
-                  <p className="text-xs text-white/60">已连接 12 个源</p>
+                  <p className="text-sm font-medium text-white">技术笔记</p>
+                  <p className="text-xs text-white/60">不断积累中</p>
                 </div>
               </div>
             </div>
@@ -177,8 +177,8 @@ const Home = () => {
                   <span className="text-annie-purple">🔒</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">安全状态</p>
-                  <p className="text-xs text-white/60">端到端加密</p>
+                  <p className="text-sm font-medium text-white">开发记录</p>
+                  <p className="text-xs text-white/60">记录成长</p>
                 </div>
               </div>
             </div>
@@ -262,13 +262,13 @@ const Home = () => {
         <div className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.06] px-8 py-14 text-center shadow-glow-lg">
           <div className="absolute inset-x-10 top-0 h-24 rounded-full bg-annie-lavender/20 blur-3xl" />
           <h2 className="mb-4 text-[2.5rem] font-semibold tracking-[-0.02em] text-white md:text-[3rem] lg:text-[3.5rem]">
-            准备好开始使用 Annie 了吗？
+            欢迎来到个人AI开发笔记
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-base leading-8 text-white/70 md:text-lg">
-            用更统一的 AI 交互体验连接知识、协作与自动化能力。
+            这里记录 AI 开发过程中的技术笔记、工具心得与踩坑记录。
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <ButtonLink to="/register">开始使用</ButtonLink>
+            <ButtonLink to="/blog">阅读更多</ButtonLink>
             <ButtonLink to="/docs" variant="secondary">
               查看开发文档
             </ButtonLink>
