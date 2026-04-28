@@ -46,9 +46,9 @@ const Blog = () => {
   return (
     <div>
       <PageHero
-        eyebrow="Blog"
-        title="Annie 博客与更新"
-        description="这里会放 Annie 的公告、使用指南和精选教程。"
+        eyebrow="博客"
+        title="AI 开发笔记"
+        description="个人 AI 智能体开发过程中的技术记录与心得分享。"
       />
 
       <Section>
