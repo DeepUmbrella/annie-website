@@ -78,7 +78,7 @@ const Blog = () => {
                   <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-white/55">
                     <span>{(featuredPost.publishedAt || featuredPost.createdAt)?.slice(0, 10)}</span>
                     <span>•</span>
-                    <span>{Math.max(1, Math.ceil(featuredPost.content.length / 400))} min read</span>
+                    <span>{Math.max(1, Math.ceil((featuredPost.content?.length || 0) / 400))} min read</span>
                   </div>
                   <Link to={`/blog/${featuredPost.slug}`}>
                     <h3 className="mb-4 text-[1.8rem] font-semibold tracking-[-0.02em] text-white md:text-[2.25rem] hover:text-annie-cyan transition-colors">
@@ -100,7 +100,7 @@ const Blog = () => {
                 <GlassCard className="p-6 md:p-8">
                   <h4 className="mb-4 text-lg font-semibold text-white">文章预览</h4>
                   <pre className="whitespace-pre-wrap break-words rounded-[1.25rem] border border-white/10 bg-black/20 p-5 text-sm leading-7 text-white/75">
-                    {featuredPost.content?.slice(0, 500)}{featuredPost.content && featuredPost.content.length > 500 ? '...' : ''}
+                    {featuredPost.content?.slice(0, 500)}{featuredPost.content && featuredPost.content?.length > 500 ? '...' : ''}
                   </pre>
                 </GlassCard>
               </div>
