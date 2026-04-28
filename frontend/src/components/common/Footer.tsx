@@ -4,34 +4,34 @@ const Footer = () => {
       <div className="mx-auto grid max-w-8xl gap-10 px-6 py-12 text-sm text-annie-muted md:grid-cols-[1.4fr_1fr_1fr] md:px-8">
         {/* Brand */}
         <div>
-          <h3 className="mb-4 text-base font-semibold text-white">Annie AI</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">个人AI开发笔记</h3>
           <p className="leading-6">
-            连接知识、对话与自动化，为个人与团队提供统一的 AI 工作入口。
+            个人 AI 开发笔记，记录技术、工具与思考。
           </p>
         </div>
 
         {/* Product Links */}
         <div>
-          <h3 className="mb-4 text-base font-semibold text-white">产品</h3>
+          <h3 className="mb-4 text-base font-semibold text-white">导航</h3>
           <ul className="space-y-3">
             <li>
               <a href="/features" className="transition hover:text-white">
-                功能特性
+                博客
               </a>
             </li>
             <li>
               <a href="/docs" className="transition hover:text-white">
-                开发文档
+                文档
               </a>
             </li>
             <li>
               <a href="/blog" className="transition hover:text-white">
-                技术博客
+                技术笔记
               </a>
             </li>
             <li>
               <a href="/contact" className="transition hover:text-white">
-                联系我们
+                关于
               </a>
             </li>
           </ul>
@@ -58,7 +58,7 @@ const Footer = () => {
             </li>
           </ul>
           <p className="mt-6 text-xs">
-            Annie AI 助手 © 2024
+            个人AI开发笔记 © 2024
           </p>
         </div>
       </div>
