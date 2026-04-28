@@ -1,4 +1,5 @@
 import { Form, Input, Button, message, List } from 'antd';
+import { useState } from 'react';
 import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
@@ -7,8 +8,10 @@ import ButtonLink from '../components/common/ButtonLink';
 
 const Contact = () => {
   const [form] = Form.useForm();
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (values: any) => {
+    setSubmitting(true);
     try {
       const API = import.meta.env.VITE_API_URL || '';
       const token = localStorage.getItem('token');
@@ -20,7 +23,9 @@ const Contact = () => {
       message.success('反馈已提交！');
       form.resetFields();
     } catch (error: any) {
-      message.error(error.message || '提交失败');
+      message.error(error.response?.data?.message || error.message || '提交失败');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -123,6 +128,8 @@ const Contact = () => {
                       type="primary"
                       htmlType="submit"
                       block
+                      loading={submitting}
+                      disabled={submitting}
                       className="h-12 text-base font-semibold bg-gradient-to-r from-annie-purple via-fuchsia-500 to-annie-cyan border-0 hover:brightness-110"
                     >
                       提交反馈
