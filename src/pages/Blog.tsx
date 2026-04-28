@@ -76,7 +76,7 @@ const Blog = () => {
               <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
                 <GlassCard className="p-6 md:p-8">
                   <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-white/55">
-                    <span>{featuredPost.publishedAt?.slice(0, 10) || featuredPost.createdAt.slice(0, 10)}</span>
+                    <span>{(featuredPost.publishedAt || featuredPost.createdAt)?.slice(0, 10)}</span>
                     <span>•</span>
                     <span>{Math.max(1, Math.ceil(featuredPost.content.length / 400))} min read</span>
                   </div>
@@ -86,7 +86,7 @@ const Blog = () => {
                     </h3>
                   </Link>
                   <Paragraph className="mb-6 text-base leading-8 text-white/72">
-                    {featuredPost.excerpt || featuredPost.content.slice(0, 140)}
+                    {featuredPost.excerpt || featuredPost.content?.slice(0, 140)}
                   </Paragraph>
                   <div className="flex flex-wrap gap-2">
                     {(featuredPost.tags || []).map(({ tag }) => (
@@ -100,7 +100,7 @@ const Blog = () => {
                 <GlassCard className="p-6 md:p-8">
                   <h4 className="mb-4 text-lg font-semibold text-white">文章预览</h4>
                   <pre className="whitespace-pre-wrap break-words rounded-[1.25rem] border border-white/10 bg-black/20 p-5 text-sm leading-7 text-white/75">
-                    {featuredPost.content.slice(0, 500)}{featuredPost.content.length > 500 ? '...' : ''}
+                    {featuredPost.content?.slice(0, 500)}{featuredPost.content && featuredPost.content.length > 500 ? '...' : ''}
                   </pre>
                 </GlassCard>
               </div>
@@ -115,7 +115,7 @@ const Blog = () => {
                         </h4>
                       </Link>
                       <Paragraph className="text-sm leading-7 text-white/72">
-                        {post.excerpt || post.content.slice(0, 120)}
+                        {post.excerpt || post.content?.slice(0, 120)}
                       </Paragraph>
                     </GlassCard>
                   ))}
