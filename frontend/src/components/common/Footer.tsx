@@ -62,6 +62,25 @@ const Footer = () => {
           </p>
         </div>
       </div>
+
+      {/* 公安备案信息 */}
+      <div className="border-t border-white/8 py-6">
+        <div className="mx-auto flex max-w-8xl items-center justify-center gap-2 px-6 text-xs text-annie-muted md:px-8">
+          <a
+            href="https://beian.mps.gov.cn/#/query/webSearch?code=51015602001782"
+            rel="noreferrer"
+            target="_blank"
+            className="flex items-center gap-1.5 transition hover:text-white"
+          >
+            <img
+              src="/beian-icon.png"
+              alt="公安备案图标"
+              className="h-4 w-auto"
+            />
+            <span>川公网安备51015602001782号</span>
+          </a>
+        </div>
+      </div>
     </footer>
   );
 };
