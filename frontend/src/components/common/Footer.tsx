@@ -66,6 +66,9 @@ const Footer = () => {
       {/* 备案信息 */}
       <div className="border-t border-white/8 py-6">
         <div className="mx-auto flex max-w-8xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-sm text-annie-muted md:px-8">
+          {/* 版权信息 */}
+          <span>个人AI开发笔记 © {new Date().getFullYear()}</span>
+
           {/* ICP 备案号 */}
           <a
             href="https://beian.miit.gov.cn/"
