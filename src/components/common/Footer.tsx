@@ -63,12 +63,23 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* 公安备案信息 */}
+      {/* 备案信息 */}
       <div className="border-t border-white/8 py-6">
-        <div className="mx-auto flex max-w-8xl items-center justify-center gap-2 px-6 text-xs text-annie-muted md:px-8">
+        <div className="mx-auto flex max-w-8xl flex-wrap items-center justify-center gap-x-6 gap-y-2 px-6 text-sm text-annie-muted md:px-8">
+          {/* ICP 备案号 */}
           <a
-            href="https://beian.mps.gov.cn/#/query/webSearch?code=51015602001782"
-            rel="noreferrer"
+            href="https://beian.miit.gov.cn/"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="transition hover:text-white"
+          >
+            蜀ICP备2026020458号-1
+          </a>
+
+          {/* 公安联网备案号 */}
+          <a
+            href="https://www.beian.gov.cn/portal/registerSystemInfo?recordcode=51015602001782"
+            rel="noopener noreferrer"
             target="_blank"
             className="flex items-center gap-1.5 transition hover:text-white"
           >
