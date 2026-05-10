@@ -1,7 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || '';
+import { getCurrentUser, login, register } from '../service/authService';
 
 interface User {
   id: string;
@@ -28,7 +26,7 @@ const initialState: AuthState = {
 export const loginAsync = createAsyncThunk(
   'auth/login',
   async ({ email, password }: { email: string; password: string }) => {
-    const response = await axios.post(`${API}/api/v1/auth/login`, {
+    const response = await login({
       email,
       password,
     });
@@ -40,7 +38,7 @@ export const loginAsync = createAsyncThunk(
 export const registerAsync = createAsyncThunk(
   'auth/register',
   async ({ username, email, password }: { username: string; email: string; password: string }) => {
-    const response = await axios.post(`${API}/api/v1/auth/register`, {
+    const response = await register({
       username,
       email,
       password,
@@ -53,10 +51,7 @@ export const registerAsync = createAsyncThunk(
 export const getCurrentUserAsync = createAsyncThunk(
   'auth/getCurrentUser',
   async () => {
-    const token = localStorage.getItem('token');
-    const response = await axios.get(`${API}/api/v1/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await getCurrentUser();
     return response.data;
   },
 );

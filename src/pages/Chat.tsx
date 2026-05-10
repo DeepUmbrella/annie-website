@@ -1,10 +1,10 @@
 import { Button, Empty, Input, List, message, Spin } from 'antd';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
 import { streamChatMessage, getErrorMessage } from '../lib/chatStream';
+import { createChatSession, getChatSessions } from '../service/chatService';
 
 type ChatMessage = {
   id: string;
@@ -18,8 +18,6 @@ type ChatSession = {
   title?: string;
   messages: ChatMessage[];
 };
-
-const API = import.meta.env.VITE_API_URL || '';
 
 const Chat = () => {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
@@ -40,9 +38,7 @@ const Chat = () => {
     }
 
     try {
-      const response = await axios.get(`${API}/api/v1/chat/sessions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await getChatSessions();
       setSessions(response.data);
       if (!activeSessionId && response.data.length > 0) {
         setActiveSessionId(response.data[0].id);
@@ -67,11 +63,7 @@ const Chat = () => {
   const createSession = async () => {
     if (!token) return;
     try {
-      const response = await axios.post(
-        `${API}/api/v1/chat/sessions`,
-        { title: `新会话 ${sessions.length + 1}` },
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
+      const response = await createChatSession({ title: `新会话 ${sessions.length + 1}` });
       const next = [response.data, ...sessions];
       setSessions(next);
       setActiveSessionId(response.data.id);

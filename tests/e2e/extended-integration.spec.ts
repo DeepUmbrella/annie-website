@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:3001';
+
 test('注册流程可用并自动登录', async ({ page }) => {
   const nonce = Date.now();
   const user = {
@@ -33,11 +35,11 @@ test('Blog 列表和详情可以联调显示已发布文章', async ({ page, req
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', { data: user });
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, { data: user });
   expect(registerResponse.ok()).toBeTruthy();
   const registerData = await registerResponse.json();
 
-  const createResponse = await request.post('http://127.0.0.1:3001/api/v1/blog/posts', {
+  const createResponse = await request.post(`${API}/api/v1/blog/posts`, {
     headers: { Authorization: `Bearer ${registerData.token}` },
     data: {
       title: `E2E Blog ${nonce}`,
@@ -49,7 +51,7 @@ test('Blog 列表和详情可以联调显示已发布文章', async ({ page, req
   expect(createResponse.ok()).toBeTruthy();
   const post = await createResponse.json();
 
-  const publishResponse = await request.put(`http://127.0.0.1:3001/api/v1/blog/posts/${post.id}`, {
+  const publishResponse = await request.put(`${API}/api/v1/blog/posts/${post.id}`, {
     headers: { Authorization: `Bearer ${registerData.token}` },
     data: { published: true },
   });
@@ -70,7 +72,7 @@ test('Chat 页面可以创建会话并发送消息', async ({ page, request }) =
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', { data: user });
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, { data: user });
   expect(registerResponse.ok()).toBeTruthy();
   const registerData = await registerResponse.json();
 

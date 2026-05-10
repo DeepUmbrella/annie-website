@@ -1,9 +1,9 @@
 import { Button, Empty, Form, Input, message, Spin } from 'antd';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
+import { getCurrentUser, updateProfile } from '../service/authService';
 
 type CurrentUser = {
   id: string;
@@ -16,8 +16,6 @@ type CurrentUser = {
     bio?: string;
   } | null;
 };
-
-const API = import.meta.env.VITE_API_URL || '';
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -34,9 +32,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await axios.get(`${API}/api/v1/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await getCurrentUser();
         const currentUser = response.data.user;
         setUser(currentUser);
         form.setFieldsValue({
@@ -57,9 +53,7 @@ const Profile = () => {
     if (!token) return;
     setSaving(true);
     try {
-      const response = await axios.put(`${API}/api/v1/auth/profile`, values, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await updateProfile(values);
       setUser((prev) => (prev ? { ...prev, profile: response.data.profile } : prev));
       message.success('个人资料更新成功');
     } catch (error: any) {

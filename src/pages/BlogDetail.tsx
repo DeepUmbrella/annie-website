@@ -1,7 +1,6 @@
 import { Empty, Spin, Tag } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import axios from 'axios';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -9,6 +8,7 @@ import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
+import { getBlogPost } from '../service/blogService';
 
 type BlogPost = {
   id: string;
@@ -22,8 +22,6 @@ type BlogPost = {
   author?: { username: string };
 };
 
-const API = import.meta.env.VITE_API_URL || '';
-
 const BlogDetail = () => {
   const { slug } = useParams();
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -33,7 +31,7 @@ const BlogDetail = () => {
     const loadPost = async () => {
       if (!slug) return;
       try {
-        const response = await axios.get(`${API}/api/v1/blog/posts/${slug}`);
+        const response = await getBlogPost(slug);
         setPost(response.data);
       } catch (error) {
         console.error('Failed to load blog post:', error);

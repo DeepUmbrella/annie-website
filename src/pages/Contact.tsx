@@ -1,10 +1,10 @@
 import { Form, Input, Button, message, List } from 'antd';
 import { useState } from 'react';
-import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
 import ButtonLink from '../components/common/ButtonLink';
+import { submitFeedback } from '../service/feedbackService';
 
 const Contact = () => {
   const [form] = Form.useForm();
@@ -13,12 +13,7 @@ const Contact = () => {
   const handleSubmit = async (values: any) => {
     setSubmitting(true);
     try {
-      const API = import.meta.env.VITE_API_URL || '';
-      const token = localStorage.getItem('token');
-      
-      await axios.post(`${API}/api/v1/feedback`, values, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
+      await submitFeedback(values);
       
       message.success('反馈已提交！');
       form.resetFields();
