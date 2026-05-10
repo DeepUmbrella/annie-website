@@ -63,9 +63,12 @@ SSH_HOST=your-server-ip-or-domain
 SSH_USER=ubuntu
 SSH_KEY=~/.ssh/annie-deploy
 DOMAIN=your-domain.com
+API_DOMAIN=api.your-domain.com
 DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/path/to/fullchain.pem
 SSL_KEY_PATH=/path/to/privkey.pem
+API_SSL_CERT_PATH=/path/to/api-fullchain.pem
+API_SSL_KEY_PATH=/path/to/api-privkey.pem
 ```
 
 说明：
@@ -73,8 +76,9 @@ SSL_KEY_PATH=/path/to/privkey.pem
 - `SSH_HOST` 是服务器 IP 或域名
 - `SSH_USER` 是服务器登录用户，推荐使用具备 `sudo` 权限的非 `root` 用户
 - `SSH_KEY` 默认可以使用脚本生成的 `~/.ssh/annie-deploy`
+- `API_DOMAIN` 是后端 API 域名，默认建议使用 `api.your-domain.com`
 - `DOCKER_REGISTRY_MIRROR` 是 Docker 镜像加速地址，`setup-server.sh` 会强制要求这个值
-- `SSL_CERT_PATH` 和 `SSL_KEY_PATH` 是你本地机器上的证书文件路径，脚本会把它们上传到服务器
+- `SSL_CERT_PATH` / `SSL_KEY_PATH` 是前端域名证书，`API_SSL_CERT_PATH` / `API_SSL_KEY_PATH` 是 API 域名证书；如果使用泛域名证书，API 证书路径可以和前端证书路径相同
 
 ### 3. 把 SSH 公钥加到服务器
 
@@ -131,7 +135,7 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 部署成功后，默认访问地址是：
 
 - 站点首页：`https://your-domain.com`
-- API：`https://your-domain.com/api`
+- API：`https://api.your-domain.com/api/v1`
 
 ## GitHub Actions 自动部署
 
@@ -153,6 +157,7 @@ SSH_HOST
 SSH_USER
 SSH_PRIVATE_KEY
 DOMAIN
+API_DOMAIN
 POSTGRES_PASSWORD
 JWT_SECRET
 MEILISEARCH_MASTER_KEY
@@ -196,6 +201,8 @@ echo "MEILISEARCH_MASTER_KEY=$MEILISEARCH_MASTER_KEY"
 ```bash
 NODE_ENV=production
 BACKEND_PORT=3001
+API_DOMAIN=api.your-domain.com
+VITE_API_URL=https://api.your-domain.com
 CORS_ORIGIN=https://your-domain.com
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=your-generated-password
@@ -237,12 +244,15 @@ SSH_HOST=your-server-ip
 SSH_USER=ubuntu
 SSH_KEY=~/.ssh/annie-deploy
 DOMAIN=your-domain.com
+API_DOMAIN=api.your-domain.com
 POSTGRES_PASSWORD=your-generated-password
 JWT_SECRET=your-generated-secret
 MEILISEARCH_MASTER_KEY=your-generated-key
 DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/etc/letsencrypt/live/your-domain.com/fullchain.pem
 SSL_KEY_PATH=/etc/letsencrypt/live/your-domain.com/privkey.pem
+API_SSL_CERT_PATH=/etc/letsencrypt/live/api.your-domain.com/fullchain.pem
+API_SSL_KEY_PATH=/etc/letsencrypt/live/api.your-domain.com/privkey.pem
 ```
 
 ### 5. 生成 SSH 密钥
@@ -265,7 +275,7 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 
 执行部署前，至少确认这些项：
 
-- [ ] `deploy.env` 里的 `SSH_HOST`、`SSH_USER`、`DOMAIN` 已改成真实值
+- [ ] `deploy.env` 里的 `SSH_HOST`、`SSH_USER`、`DOMAIN`、`API_DOMAIN` 已改成真实值
 - [ ] `POSTGRES_PASSWORD`、`JWT_SECRET`、`MEILISEARCH_MASTER_KEY` 不是占位值
 - [ ] SSH 公钥已经加入服务器
 - [ ] 本地证书文件路径真实存在

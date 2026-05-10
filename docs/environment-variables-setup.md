@@ -33,6 +33,7 @@ SSH_HOST=your-server-ip-or-domain
 SSH_USER=ubuntu
 SSH_KEY=/path/to/your/private/key
 DOMAIN=your-domain.com
+API_DOMAIN=api.your-domain.com
 
 POSTGRES_PASSWORD=your-secure-db-password-here
 JWT_SECRET=your-very-secure-jwt-secret-here
@@ -41,6 +42,8 @@ MEILISEARCH_MASTER_KEY=your-secure-meilisearch-key-here
 DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 SSL_CERT_PATH=/path/to/your/certificate.pem
 SSL_KEY_PATH=/path/to/your/private.key
+API_SSL_CERT_PATH=/path/to/your/api-certificate.pem
+API_SSL_KEY_PATH=/path/to/your/api-private.key
 ```
 
 说明：
@@ -49,7 +52,8 @@ SSL_KEY_PATH=/path/to/your/private.key
 - 推荐使用具备 `sudo` 权限的非 `root` 用户作为 `SSH_USER`
 - `POSTGRES_PASSWORD`、`JWT_SECRET`、`MEILISEARCH_MASTER_KEY` 会被部署脚本写入服务器端环境文件
 - `DOCKER_REGISTRY_MIRROR` 是 `setup-server.sh` 必填项
-- `SSL_CERT_PATH`、`SSL_KEY_PATH` 是你本地机器上的证书路径，脚本会上传到服务器
+- `DOMAIN` 是前端站点域名，`API_DOMAIN` 是后端 API 域名
+- `SSL_CERT_PATH`、`SSL_KEY_PATH` 是前端域名证书路径，`API_SSL_CERT_PATH`、`API_SSL_KEY_PATH` 是 API 域名证书路径；使用泛域名证书时两组路径可以相同
 
 ### 2. 应用运行时变量
 
@@ -59,6 +63,8 @@ SSL_KEY_PATH=/path/to/your/private.key
 NODE_ENV=production
 PORT=3001
 BACKEND_PORT=3001
+API_DOMAIN=api.your-domain.com
+VITE_API_URL=https://api.your-domain.com
 
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=your-secure-db-password-here
@@ -177,6 +183,7 @@ docker compose --env-file .env.docker up -d
 ```bash
 NODE_ENV=development
 BACKEND_PORT=3001
+VITE_API_URL=http://localhost:3001
 CORS_ORIGIN=http://localhost:3000
 
 POSTGRES_USER=annie
@@ -233,8 +240,16 @@ ANNIE_API_KEY=your-annie-api-key
 
 ```bash
 env $(cat deploy.env | xargs) ./scripts/setup-server.sh
+env $(cat deploy.env | xargs) ./scripts/setup-nginx.sh
 env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 ```
+
+生产环境默认拆分为两个公网入口：
+
+- 前端站点：`https://your-domain.com`
+- 后端 API：`https://api.your-domain.com/api/v1`
+- 前端公网健康检查：`https://your-domain.com/health`
+- 后端健康检查：`https://api.your-domain.com/api/v1/health`
 
 ## 文件对应关系
 

@@ -97,6 +97,7 @@ services:
       MEILISEARCH_URL: http://meilisearch:7700
       MEILISEARCH_MASTER_KEY: ${MEILISEARCH_MASTER_KEY}
       JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
       PORT: 3000
     depends_on:
       postgres:
@@ -133,7 +134,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:${BACKEND_PORT:-3001}
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3001}
         NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
     container_name: annie-frontend
     restart: unless-stopped

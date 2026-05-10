@@ -4,6 +4,8 @@ FROM docker.m.daocloud.io/library/node:22-alpine AS builder
 WORKDIR /app
 
 ARG NPM_REGISTRY=https://registry.npmmirror.com
+ARG VITE_API_URL=
+ENV VITE_API_URL=${VITE_API_URL}
 
 COPY package*.json ./
 RUN npm config set registry "${NPM_REGISTRY}" \

@@ -26,6 +26,11 @@ else
     ROOT_DOMAIN="${DOMAIN}"
     SERVER_NAMES="${DOMAIN} www.${DOMAIN}"
 fi
+API_DOMAIN="${API_DOMAIN:-api.${ROOT_DOMAIN}}"
+API_SSL_CERT_PATH="${API_SSL_CERT_PATH:-$SSL_CERT_PATH}"
+API_SSL_KEY_PATH="${API_SSL_KEY_PATH:-$SSL_KEY_PATH}"
+UPLOAD_MAIN_SSL="${UPLOAD_MAIN_SSL:-true}"
+UPLOAD_API_SSL="${UPLOAD_API_SSL:-true}"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -81,7 +86,7 @@ main() {
     cat >"$TMP_NGINX_CONF" <<EOF
 server {
   listen 80 default_server;
-  server_name ${SERVER_NAMES};
+  server_name ${SERVER_NAMES} ${API_DOMAIN};
 
   location /health {
     access_log off;
@@ -116,6 +121,23 @@ server {
   gzip_min_length 1024;
   gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
 
+  # OpenClaw install script and downloads must remain on the main site.
+  location = /install-cn.ps1 {
+    alias /var/www/downloads/install-cn.ps1;
+    default_type text/plain;
+    add_header Content-Type text/plain;
+  }
+
+  location /downloads/ {
+    alias /var/www/downloads/;
+    autoindex off;
+    add_header Content-Disposition "attachment";
+  }
+
+  location /api/ {
+    return 308 https://${API_DOMAIN}\$request_uri;
+  }
+
   location / {
     proxy_pass http://127.0.0.1:3000;
     proxy_http_version 1.1;
@@ -128,7 +150,36 @@ server {
     proxy_read_timeout 86400;
   }
 
-  location /api/ {
+  location /health {
+    access_log off;
+    return 200 "healthy\n";
+    add_header Content-Type text/plain;
+  }
+}
+
+server {
+  listen 443 ssl http2;
+  server_name ${API_DOMAIN};
+
+  ssl_certificate /etc/nginx/ssl/${API_DOMAIN}.crt;
+  ssl_certificate_key /etc/nginx/ssl/${API_DOMAIN}.key;
+  ssl_protocols TLSv1.2 TLSv1.3;
+  ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384;
+  ssl_prefer_server_ciphers off;
+  ssl_session_cache shared:SSL:10m;
+  ssl_session_timeout 10m;
+
+  add_header X-Frame-Options DENY;
+  add_header X-Content-Type-Options nosniff;
+  add_header X-XSS-Protection "1; mode=block";
+  add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
+
+  gzip on;
+  gzip_vary on;
+  gzip_min_length 1024;
+  gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json;
+
+  location / {
     proxy_pass http://127.0.0.1:3001;
     proxy_http_version 1.1;
     proxy_set_header Host \$host;
@@ -136,12 +187,6 @@ server {
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
     proxy_read_timeout 86400;
-  }
-
-  location /health {
-    access_log off;
-    return 200 "healthy\n";
-    add_header Content-Type text/plain;
   }
 }
 EOF
@@ -168,15 +213,49 @@ EOF
     fi
 
     log_info "2) 上传 SSL 证书"
-    if ! scp "${SSH_OPTS[@]}" "$SSL_CERT_PATH" "$SSH_TARGET:/tmp/${PRIMARY_DOMAIN}.pem" ||
-       ! scp "${SSH_OPTS[@]}" "$SSL_KEY_PATH" "$SSH_TARGET:/tmp/${PRIMARY_DOMAIN}.key" ||
-       ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
-           ${REMOTE_SUDO} mkdir -p /etc/nginx/ssl
-           ${REMOTE_SUDO} mv /tmp/${PRIMARY_DOMAIN}.pem /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt
-           ${REMOTE_SUDO} mv /tmp/${PRIMARY_DOMAIN}.key /etc/nginx/ssl/${PRIMARY_DOMAIN}.key
-           ${REMOTE_SUDO} chmod 644 /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt
-           ${REMOTE_SUDO} chmod 600 /etc/nginx/ssl/${PRIMARY_DOMAIN}.key
-       "; then
+    if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "${REMOTE_SUDO} mkdir -p /etc/nginx/ssl"; then
+        log_error "Failed to prepare SSL directory"
+        exit 1
+    fi
+
+    if [ "$UPLOAD_MAIN_SSL" = "true" ]; then
+        if ! scp "${SSH_OPTS[@]}" "$SSL_CERT_PATH" "$SSH_TARGET:/tmp/${PRIMARY_DOMAIN}.pem" ||
+           ! scp "${SSH_OPTS[@]}" "$SSL_KEY_PATH" "$SSH_TARGET:/tmp/${PRIMARY_DOMAIN}.key" ||
+           ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
+               ${REMOTE_SUDO} mv /tmp/${PRIMARY_DOMAIN}.pem /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt
+               ${REMOTE_SUDO} mv /tmp/${PRIMARY_DOMAIN}.key /etc/nginx/ssl/${PRIMARY_DOMAIN}.key
+               ${REMOTE_SUDO} chmod 644 /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt
+               ${REMOTE_SUDO} chmod 600 /etc/nginx/ssl/${PRIMARY_DOMAIN}.key
+           "; then
+            log_error "Failed to upload main-site SSL certificates"
+            exit 1
+        fi
+    else
+        log_info "Skipping main-site SSL upload; using existing /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt and .key"
+    fi
+
+    if [ "$UPLOAD_API_SSL" = "true" ]; then
+        if ! scp "${SSH_OPTS[@]}" "$API_SSL_CERT_PATH" "$SSH_TARGET:/tmp/${API_DOMAIN}.pem" ||
+           ! scp "${SSH_OPTS[@]}" "$API_SSL_KEY_PATH" "$SSH_TARGET:/tmp/${API_DOMAIN}.key" ||
+           ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
+               ${REMOTE_SUDO} mv /tmp/${API_DOMAIN}.pem /etc/nginx/ssl/${API_DOMAIN}.crt
+               ${REMOTE_SUDO} mv /tmp/${API_DOMAIN}.key /etc/nginx/ssl/${API_DOMAIN}.key
+               ${REMOTE_SUDO} chmod 644 /etc/nginx/ssl/${API_DOMAIN}.crt
+               ${REMOTE_SUDO} chmod 600 /etc/nginx/ssl/${API_DOMAIN}.key
+           "; then
+            log_error "Failed to upload API SSL certificates"
+            exit 1
+        fi
+    else
+        log_info "Skipping API SSL upload; using existing /etc/nginx/ssl/${API_DOMAIN}.crt and .key"
+    fi
+
+    if ! ssh "${SSH_OPTS[@]}" "$SSH_TARGET" "
+        test -f /etc/nginx/ssl/${PRIMARY_DOMAIN}.crt &&
+        test -f /etc/nginx/ssl/${PRIMARY_DOMAIN}.key &&
+        test -f /etc/nginx/ssl/${API_DOMAIN}.crt &&
+        test -f /etc/nginx/ssl/${API_DOMAIN}.key
+    "; then
         log_error "Failed to upload SSL certificates"
         exit 1
     fi

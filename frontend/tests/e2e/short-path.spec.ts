@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:3001';
+
 test('Profile 页面可以加载并保存资料', async ({ page, request }) => {
   const nonce = Date.now();
   const user = {
@@ -8,7 +10,7 @@ test('Profile 页面可以加载并保存资料', async ({ page, request }) => {
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', { data: user });
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, { data: user });
   expect(registerResponse.ok()).toBeTruthy();
   const registerData = await registerResponse.json();
 
@@ -41,7 +43,7 @@ test('Chat 页面支持回车发送消息', async ({ page, request }) => {
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', { data: user });
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, { data: user });
   expect(registerResponse.ok()).toBeTruthy();
   const registerData = await registerResponse.json();
 

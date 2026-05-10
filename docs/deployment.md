@@ -7,7 +7,7 @@
 ```
 ┌──────────────────────────────┐
 │ 宿主机 Nginx                 │
-│ 80/443, SSL, 域名入口        │
+│ 80/443, SSL, 前端/API 域名入口 │
 └──────────────┬───────────────┘
                │
         ┌──────┴──────┐
@@ -26,14 +26,14 @@
 ```
 
 > 这里有两层与 Nginx 相关的配置，但职责不同，不是简单重复：
-> - **宿主机 Nginx** 负责 HTTPS、证书、域名入口，以及把 `/` 和 `/api` 分发到对应容器。
+> - **宿主机 Nginx** 负责 HTTPS、证书、域名入口，将主域名转发到 frontend 容器，将 API 域名转发到 backend 容器。
 > - **frontend 容器内的 Nginx** 只负责托管 React 构建产物，并处理 SPA 路由刷新。
 
 ## 前提条件
 
 - Linux 服务器
-- 域名
-- SSL 证书文件
+- 前端域名和 API 域名
+- 前端域名和 API 域名的 SSL 证书文件
 - Docker 和 Docker Compose 已安装
 
 ## 部署步骤
@@ -70,6 +70,8 @@ cd <project-directory>
 ```bash
 NODE_ENV=production
 BACKEND_PORT=3001
+API_DOMAIN=api.<your-domain>
+VITE_API_URL=https://api.<your-domain>
 CORS_ORIGIN=https://<your-domain>
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=<strong-password>
@@ -99,6 +101,8 @@ ANNIE_API_KEY=<annie-api-key>
 
 - `your-domain.crt`
 - `your-domain.key`
+- `api.your-domain.crt`
+- `api.your-domain.key`
 
 ### 6. 配置宿主机 Nginx
 
@@ -107,7 +111,7 @@ ANNIE_API_KEY=<annie-api-key>
 ```nginx
 server {
     listen 80;
-    server_name <your-domain> www.<your-domain>;
+    server_name <your-domain> www.<your-domain> api.<your-domain>;
     return 301 https://$host$request_uri;
 }
 
@@ -132,7 +136,21 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    location /api/ {
+    location /health {
+        access_log off;
+        return 200 "healthy\n";
+        add_header Content-Type text/plain;
+    }
+}
+
+server {
+    listen 443 ssl http2;
+    server_name api.<your-domain>;
+
+    ssl_certificate /etc/nginx/ssl/api.<your-domain>.crt;
+    ssl_certificate_key /etc/nginx/ssl/api.<your-domain>.key;
+
+    location / {
         proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;

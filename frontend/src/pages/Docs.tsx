@@ -1,9 +1,9 @@
 import { Input, List, Typography, Empty } from 'antd';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
+import { searchDocs as searchDocsApi } from '../service/docsService';
 
 const { Paragraph } = Typography;
 
@@ -15,8 +15,7 @@ const Docs = () => {
     const searchDocs = async () => {
       if (searchQuery) {
         try {
-          const API = import.meta.env.VITE_API_URL || '';
-          const response = await axios.get(`${API}/api/v1/docs/search?q=${searchQuery}`);
+          const response = await searchDocsApi(searchQuery);
           setSearchResults(response.data);
         } catch (error) {
           console.error('Failed to search docs:', error);

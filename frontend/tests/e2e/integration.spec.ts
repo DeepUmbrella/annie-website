@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const API = process.env.E2E_API_URL || 'http://127.0.0.1:3001';
+
 test('真实登录流程可用并写入 token', async ({ page, request }) => {
   const nonce = Date.now();
   const user = {
@@ -8,7 +10,7 @@ test('真实登录流程可用并写入 token', async ({ page, request }) => {
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', {
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, {
     data: user,
   });
   expect(registerResponse.ok()).toBeTruthy();
@@ -38,7 +40,7 @@ test('反馈表单可以成功提交到后端', async ({ page, request }) => {
     password: 'Test123456',
   };
 
-  const registerResponse = await request.post('http://127.0.0.1:3001/api/v1/auth/register', {
+  const registerResponse = await request.post(`${API}/api/v1/auth/register`, {
     data: user,
   });
   expect(registerResponse.ok()).toBeTruthy();

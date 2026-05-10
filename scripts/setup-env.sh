@@ -98,6 +98,8 @@ generate_env_files() {
 # 服务器配置
 NODE_ENV=production
 BACKEND_PORT=3001
+API_DOMAIN=api.your-domain.com
+VITE_API_URL=https://api.your-domain.com
 CORS_ORIGIN=https://your-domain.com
 
 # 数据库配置
@@ -151,6 +153,7 @@ SSH_HOST=your-server-ip-or-domain
 SSH_USER=ubuntu
 SSH_KEY=${HOME}/.ssh/annie-deploy
 DOMAIN=your-domain.com
+API_DOMAIN=api.your-domain.com
 
 # 数据库和安全配置
 POSTGRES_PASSWORD=${db_password}
@@ -163,6 +166,8 @@ DOCKER_REGISTRY_MIRROR=https://your-registry-mirror.com
 # SSL 证书路径 (使用 Let's Encrypt 或其他证书)
 SSL_CERT_PATH=/etc/letsencrypt/live/your-domain.com/fullchain.pem
 SSL_KEY_PATH=/etc/letsencrypt/live/your-domain.com/privkey.pem
+API_SSL_CERT_PATH=/etc/letsencrypt/live/api.your-domain.com/fullchain.pem
+API_SSL_KEY_PATH=/etc/letsencrypt/live/api.your-domain.com/privkey.pem
 EOF
 
     # 创建密钥备份文件（仅本地使用，不要提交到Git）

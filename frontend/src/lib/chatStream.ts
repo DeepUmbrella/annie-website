@@ -1,3 +1,5 @@
+import { buildChatStreamUrl } from '../service/chatService';
+
 export type StreamEvent =
   | { type: 'start'; requestId: string }
   | { type: 'chunk'; requestId: string; text: string }
@@ -40,9 +42,7 @@ export function streamChatMessage(
 ): AbortController {
   const controller = new AbortController();
 
-  const apiUrl = (import.meta.env.VITE_API_URL as string) || '';
-
-  const url = `${apiUrl}/api/v1/chat/${sessionId}/stream`;
+  const url = buildChatStreamUrl(sessionId);
 
   fetch(url, {
     method: 'POST',

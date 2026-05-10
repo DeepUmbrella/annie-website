@@ -1,10 +1,10 @@
 import { Empty, Spin, Tag, Typography } from 'antd';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import PageHero from '../components/common/PageHero';
 import GlassCard from '../components/common/GlassCard';
 import Section from '../components/common/Section';
+import { getBlogPosts } from '../service/blogService';
 
 type BlogPost = {
   id: string;
@@ -19,7 +19,6 @@ type BlogPost = {
 };
 
 const { Paragraph } = Typography;
-const API = import.meta.env.VITE_API_URL || '';
 
 const Blog = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -28,7 +27,7 @@ const Blog = () => {
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        const response = await axios.get(`${API}/api/v1/blog/posts`);
+        const response = await getBlogPosts();
         setPosts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Failed to load blog posts:', error);

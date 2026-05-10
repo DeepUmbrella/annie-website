@@ -29,6 +29,7 @@ if [[ "$DOMAIN" == www.* ]]; then
 else
     API_BASE_DOMAIN="${DOMAIN}"
 fi
+API_DOMAIN="${API_DOMAIN:-api.${API_BASE_DOMAIN}}"
 ANNIE_API_URL="${ANNIE_API_URL:-https://annie-api.${API_BASE_DOMAIN}}"
 ANNIE_API_KEY="${ANNIE_API_KEY:-your-annie-api-key}"
 
@@ -149,6 +150,8 @@ main() {
     cat >"$TMP_ROOT_ENV" <<EOF
 NODE_ENV=production
 BACKEND_PORT=3001
+API_DOMAIN=${API_DOMAIN}
+VITE_API_URL=https://${API_DOMAIN}
 CORS_ORIGIN=https://${DOMAIN}
 POSTGRES_USER=annie
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -283,7 +286,7 @@ EOF
     sleep 30
 
     # Check backend health (via SSH, internal 127.0.0.1)
-    if ! check_service_health "Backend" "http://127.0.0.1:3000/api/v1/health" true; then
+    if ! check_service_health "Backend" "http://127.0.0.1:3001/api/v1/health" true; then
         log_error "Backend health check failed"
         exit 1
     fi
@@ -296,7 +299,7 @@ EOF
 
     log_info "✅ 部署完成并验证通过"
     log_info "应用访问地址: https://$DOMAIN"
-    log_info "API地址: https://$DOMAIN/api"
+    log_info "API地址: https://$API_DOMAIN/api/v1"
 }
 
 main "$@"

@@ -23,7 +23,7 @@ Annie AI 助手介绍网站，采用前后端分离架构。
 
 ### 部署
 - **容器编排:** Docker Compose
-- **反向代理:** 宿主机 Nginx 负责 HTTPS / 域名入口
+- **反向代理:** 宿主机 Nginx 负责 HTTPS / 前端域名 / API 域名入口
 - **前端静态服务:** frontend 容器内 Nginx 负责托管构建产物
 - **部署方式:** `setup-server.sh` + `setup-nginx.sh` + `deploy-app.sh`
 
@@ -147,6 +147,13 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 - [DEPLOYMENT-QUICKSTART.md](/Users/yanlin/projects/annie-website/DEPLOYMENT-QUICKSTART.md)
 - [docs/deployment.md](/Users/yanlin/projects/annie-website/docs/deployment.md)
 
+生产部署默认使用独立域名：
+
+- 前端站点：`https://your-domain.com`
+- 后端 API：`https://api.your-domain.com/api/v1`
+- 前端公网健康检查：`https://your-domain.com/health`
+- 后端健康检查：`https://api.your-domain.com/api/v1/health`
+
 ### GitHub Actions 自动部署
 
 仓库已经包含 [`.github/workflows/deploy.yml`](/Users/yanlin/projects/annie-website/.github/workflows/deploy.yml)，当代码推送到 `main` 分支时会自动触发部署，也支持手动 `workflow_dispatch`。
@@ -157,6 +164,7 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 - `SSH_USER`
 - `SSH_PRIVATE_KEY`
 - `DOMAIN`
+- `API_DOMAIN`
 - `POSTGRES_PASSWORD`
 - `JWT_SECRET`
 - `MEILISEARCH_MASTER_KEY`
@@ -177,6 +185,8 @@ env $(cat deploy.env | xargs) ./scripts/deploy-app.sh
 - `deploy.env`: 生产部署脚本使用的环境变量文件
 
 详细说明见 [docs/environment-variables-setup.md](/Users/yanlin/projects/annie-website/docs/environment-variables-setup.md)。
+
+生产前端构建使用 `VITE_API_URL` 指向 API 域名，例如 `https://api.your-domain.com`；后端通过 `CORS_ORIGIN` 只允许前端域名，例如 `https://your-domain.com`。
 
 ## 常用命令
 
